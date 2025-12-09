@@ -1,0 +1,65 @@
+# Embedding Configuration
+# Primary: BAAI/bge-m3 (1024-d). Set use_legacy_embedding to true to switch back.
+embedding_model_name: "BAAI/bge-m3"
+embedding_model_name_legacy: "sentence-transformers/all-mpnet-base-v2"
+use_legacy_embedding: false
+embedding_dim: 1024
+
+# Reranking Configuration (MANDATORY)
+# Primary: bge reranker m3; fallback: bge reranker base v1.5.
+reranker_model_name: "BAAI/bge-reranker-v2-m3"
+reranker_model_fallback_name: "BAAI/bge-reranker-base-v1.5"
+reranker_use_fallback: false
+reranker_enabled: true
+reranker_top_k: 100  # Rerank top 100 candidates for comprehensive 1-to-many matching
+
+# Top-K Results Configuration
+top_k_results: 6  # Number of top matches to return per query (1-to-many relationship)
+
+# Minimum Score Threshold (for REUSED vs NEW_BDD_REQUIRED decision)
+# Note: Cross-encoder rerankers can output negative scores. 
+# Typical good matches: > 0.0, acceptable matches: > -1.0, poor matches: < -2.0
+min_score_threshold: -2.0  # Lowered from -1.0 to catch more borderline matches
+
+# Retrieval Limits (Increased for better recall - 1-to-many matching)
+prefilter_limit: 300  # Retrieve 300 candidates from vector search
+relaxed_limit: 500
+
+# Vector Search Parameters (Increased proportionally)
+ef_search: 200  # Higher ef_search for better HNSW search quality
+ef_relaxed: 300
+
+# Clustering Configuration
+clustering_method: "agglomerative"
+clustering_threshold: 0.22
+min_cluster_size: 3
+
+# Fallback Configuration
+fallbacks:
+  enable_rule_synthesis: false  # Disabled - only REUSED or NEW_BDD_REQUIRED
+  enable_llm_synthesis: false
+  enable_context_expansion: true
+  enable_lexical_search: true
+
+# Batch Processing
+batch_size: 32
+
+# Normalization
+# Version 2.0 enables domain whitelist + action canonicalization
+normalization_version: "2.0"
+
+# Database Configuration
+database:
+  host: "localhost"
+  port: 5432
+  database: "teststep_rag"
+  user: "postgres"
+  password: "123456"
+
+# Fine-Tuning (Optional)
+fine_tuning:
+  enabled: false
+  metrics_output_path: "./metrics/"
+
+
+
