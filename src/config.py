@@ -67,6 +67,7 @@ class DatabaseConfig:
     database: str
     user: str
     password: str
+    table_suffix: str = ""
 
 
 @dataclass
@@ -137,7 +138,8 @@ def load_config(config_path: str = "config.yaml") -> Config:
             port=config_dict['database']['port'],
             database=config_dict['database']['database'],
             user=config_dict['database']['user'],
-            password=config_dict['database']['password']
+            password=config_dict['database']['password'],
+            table_suffix=config_dict['database'].get('table_suffix', '')
         ),
         batch_size=config_dict['batch_size'],
         normalization_version=config_dict['normalization_version'],
