@@ -12,6 +12,7 @@ class EmbeddingConfig:
     legacy_model_name: str
     use_legacy: bool
     dim: int
+    cache_dir: str
 
 
 @dataclass
@@ -99,7 +100,8 @@ def load_config(config_path: str = "config.yaml") -> Config:
             model_name=config_dict['embedding_model_name'],
             legacy_model_name=config_dict.get('embedding_model_name_legacy', config_dict['embedding_model_name']),
             use_legacy=config_dict.get('use_legacy_embedding', False),
-            dim=config_dict['embedding_dim']
+            dim=config_dict['embedding_dim'],
+            cache_dir=config_dict.get('embedding_cache_dir', ".embedding_cache")
         ),
         reranker=RerankerConfig(
             model_name=config_dict['reranker_model_name'],

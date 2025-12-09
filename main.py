@@ -31,7 +31,7 @@ def setup_pipeline(config):
         if getattr(config.embedding, "use_legacy", False)
         else config.embedding.model_name
     )
-    embedder = Embedder(embedding_model)
+    embedder = Embedder(embedding_model, cache_dir=config.embedding.cache_dir)
     retrieval = Retrieval(db, config)
     reranker_model = (
         config.reranker.fallback_model_name

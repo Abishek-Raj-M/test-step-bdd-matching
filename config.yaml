@@ -4,6 +4,8 @@ embedding_model_name: "BAAI/bge-m3"
 embedding_model_name_legacy: "sentence-transformers/all-mpnet-base-v2"
 use_legacy_embedding: false
 embedding_dim: 1024
+# Versioned cache directory to avoid mixing embeddings across models
+embedding_cache_dir: ".embedding_cache_bgem3_v2"
 
 # Reranking Configuration (MANDATORY)
 # Primary: bge reranker m3; fallback: bge reranker base v1.5.
@@ -52,7 +54,7 @@ normalization_version: "2.0"
 database:
   host: "localhost"
   port: 5432
-  database: "teststep_rag"
+  database: "teststep_rag_v2"  # New database to keep v1 data intact
   user: "postgres"
   password: "123456"
 
