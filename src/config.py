@@ -9,8 +9,6 @@ from dataclasses import dataclass
 class EmbeddingConfig:
     """Embedding model configuration."""
     model_name: str
-    legacy_model_name: str
-    use_legacy: bool
     dim: int
     cache_dir: str
 
@@ -19,8 +17,6 @@ class EmbeddingConfig:
 class RerankerConfig:
     """Reranker model configuration."""
     model_name: str
-    fallback_model_name: str
-    use_fallback: bool
     enabled: bool
     top_k: int
 
@@ -67,7 +63,6 @@ class DatabaseConfig:
     database: str
     user: str
     password: str
-    table_suffix: str = ""
 
 
 @dataclass
@@ -99,15 +94,11 @@ def load_config(config_path: str = "config.yaml") -> Config:
     return Config(
         embedding=EmbeddingConfig(
             model_name=config_dict['embedding_model_name'],
-            legacy_model_name=config_dict.get('embedding_model_name_legacy', config_dict['embedding_model_name']),
-            use_legacy=config_dict.get('use_legacy_embedding', False),
             dim=config_dict['embedding_dim'],
             cache_dir=config_dict.get('embedding_cache_dir', ".embedding_cache")
         ),
         reranker=RerankerConfig(
             model_name=config_dict['reranker_model_name'],
-            fallback_model_name=config_dict.get('reranker_model_fallback_name', config_dict['reranker_model_name']),
-            use_fallback=config_dict.get('reranker_use_fallback', False),
             enabled=config_dict['reranker_enabled'],
             top_k=config_dict['reranker_top_k']
         ),
@@ -138,8 +129,7 @@ def load_config(config_path: str = "config.yaml") -> Config:
             port=config_dict['database']['port'],
             database=config_dict['database']['database'],
             user=config_dict['database']['user'],
-            password=config_dict['database']['password'],
-            table_suffix=config_dict['database'].get('table_suffix', '')
+            password=config_dict['database']['password']
         ),
         batch_size=config_dict['batch_size'],
         normalization_version=config_dict['normalization_version'],

@@ -1,17 +1,12 @@
 # Embedding Configuration
-# Primary: BAAI/bge-m3 (1024-d). Set use_legacy_embedding to true to switch back.
+# BGE-m3 model (1024 dimensions)
 embedding_model_name: "BAAI/bge-m3"
-embedding_model_name_legacy: "sentence-transformers/all-mpnet-base-v2"
-use_legacy_embedding: false
 embedding_dim: 1024
-# Versioned cache directory to avoid mixing embeddings across models
-embedding_cache_dir: ".embedding_cache_bgem3_v2"
+embedding_cache_dir: ".embedding_cache_bgem3"
 
 # Reranking Configuration (MANDATORY)
-# Primary: bge reranker m3; fallback: bge reranker base v1.5.
+# BGE reranker v2-m3
 reranker_model_name: "BAAI/bge-reranker-v2-m3"
-reranker_model_fallback_name: "BAAI/bge-reranker-base-v1.5"
-reranker_use_fallback: false
 reranker_enabled: true
 reranker_top_k: 100  # Rerank top 100 candidates for comprehensive 1-to-many matching
 
@@ -51,13 +46,13 @@ batch_size: 32
 normalization_version: "2.0"
 
 # Database Configuration
+# New database for bge-m3 feature branch
 database:
   host: "localhost"
   port: 5432
-  database: "teststep_rag"  # Use existing pgvector database/connection
+  database: "teststep_rag_bgem3"  # New database for this feature branch
   user: "postgres"
   password: "123456"
-  table_suffix: "_v2"  # Use versioned tables in the same DB to keep v1 intact
 
 # Fine-Tuning (Optional)
 fine_tuning:

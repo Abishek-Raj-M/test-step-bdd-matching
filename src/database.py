@@ -66,10 +66,9 @@ class Database:
     
     def __init__(self, config):
         self.config = config
-        self.table_suffix = getattr(self.config.database, "table_suffix", "")
-        self.table_chunks = f"teststep_chunks{self.table_suffix}"
-        self.table_feature_steps = f"feature_steps{self.table_suffix}"
-        self.table_individual_steps = f"bdd_individual_steps{self.table_suffix}"
+        self.table_chunks = "teststep_chunks"
+        self.table_feature_steps = "feature_steps"
+        self.table_individual_steps = "bdd_individual_steps"
         self.conn = None
         self._connect()
         self._ensure_extensions()

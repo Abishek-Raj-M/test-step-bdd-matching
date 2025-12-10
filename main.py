@@ -26,19 +26,9 @@ def setup_pipeline(config):
     db = Database(config)
     normalizer = Normalizer(config.normalization_version)
     chunker = Chunker()
-    embedding_model = (
-        config.embedding.legacy_model_name
-        if getattr(config.embedding, "use_legacy", False)
-        else config.embedding.model_name
-    )
-    embedder = Embedder(embedding_model, cache_dir=config.embedding.cache_dir)
+    embedder = Embedder(config.embedding.model_name, cache_dir=config.embedding.cache_dir)
     retrieval = Retrieval(db, config)
-    reranker_model = (
-        config.reranker.fallback_model_name
-        if getattr(config.reranker, "use_fallback", False)
-        else config.reranker.model_name
-    )
-    reranker = Reranker(reranker_model)
+    reranker = Reranker(config.reranker.model_name)
     placeholder_mapper = PlaceholderMapper()
     fallback_chain = FallbackChain(db, retrieval, reranker, normalizer, embedder, config)
     
