@@ -1,84 +1,252 @@
-# Embedding Configuration
-# BGE-m3 model (1024 dimensions)
+# ============================================================================
+# TEST STEP TO BDD MATCHING SYSTEM - CONFIGURATION
+# ============================================================================
+# This configuration file controls the RAG-based matching system that matches
+# manual test steps to existing BDD feature steps using semantic similarity.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# EMBEDDING CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls the embedding model used to convert text into vector representations.
+# Embeddings are used for initial semantic similarity search in the vector database.
+
+# Model name from HuggingFace. BGE-m3 is a multilingual embedding model that
+# produces 1024-dimensional vectors, providing better semantic understanding
+# compared to smaller models (e.g., 768-d models).
 embedding_model_name: "BAAI/bge-m3"
+
+# Dimension of the embedding vectors. Must match the model's output dimension.
+# BGE-m3 produces 1024-dimensional vectors. This must match the database schema.
 embedding_dim: 1024
+
+# Directory to cache downloaded models and embeddings. This speeds up subsequent
+# runs by avoiding re-downloading models and re-computing embeddings for the
+# same text. Each model version should have its own cache directory.
 embedding_cache_dir: ".embedding_cache_bgem3"
 
-# Reranking Configuration (MANDATORY)
-# BGE reranker v2-m3
+# ----------------------------------------------------------------------------
+# RERANKING CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls the reranker model that refines search results using cross-encoder
+# architecture. Rerankers provide more accurate similarity scores by comparing
+# query and candidate pairs directly, but are slower than vector search.
+
+# Reranker model name from HuggingFace. BGE reranker v2-m3 is optimized to
+# work with BGE-m3 embeddings and provides better semantic matching accuracy.
 reranker_model_name: "BAAI/bge-reranker-v2-m3"
+
+# Whether reranking is enabled. When false, only vector search results are used.
+# Note: Dynamic reranking may still skip reranker even when enabled=true.
 reranker_enabled: true
-reranker_top_k: 100  # Rerank top 100 candidates for comprehensive 1-to-many matching
 
-# Top-K Results Configuration
-top_k_results: 5  # Number of top matches to return per query (1-to-many relationship)
+# Number of top candidates to send to reranker for scoring. Higher values
+# provide better recall but increase processing time. Only used when reranker
+# is actually called (not skipped by dynamic reranking).
+reranker_top_k: 100
 
-# Minimum Score Threshold (for REUSED vs NEW_BDD_REQUIRED decision)
-# Note: Cross-encoder rerankers can output negative scores. 
-# Typical good matches: > 0.0, acceptable matches: > -1.0, poor matches: < -2.0
-min_score_threshold: -2.0  # Lowered from -1.0 to catch more borderline matches
+# ----------------------------------------------------------------------------
+# RESULTS CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls how many matches are returned per test step query.
 
-# Retrieval Limits (Optimized for dynamic reranking)
-prefilter_limit: 100  # Retrieve 100 candidates from vector search (reduced for efficiency)
+# Number of top matches to return per query. Supports 1-to-many relationships
+# where one test step can match multiple BDD steps. All returned matches are
+# considered when deciding REUSED_TEMPLATE vs NEW_BDD_REQUIRED.
+top_k_results: 5
+
+# ----------------------------------------------------------------------------
+# SCORE THRESHOLD CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls the minimum score required to mark a match as REUSED_TEMPLATE.
+# If ANY of the top-K matches has a score >= this threshold, the step is
+# marked as REUSED_TEMPLATE; otherwise, it's marked as NEW_BDD_REQUIRED.
+
+# Minimum score threshold for REUSED vs NEW_BDD_REQUIRED decision.
+# Cross-encoder rerankers can output negative scores. Score ranges:
+#   - Excellent matches: > 0.0 (very good semantic similarity)
+#   - Good matches: > -1.0 (acceptable similarity)
+#   - Borderline matches: > -2.0 (weak but related)
+#   - Poor matches: < -2.0 (unrelated)
+# 
+# This threshold is only used when reranker is called. When reranker is
+# skipped (via dynamic reranking), vector similarity threshold (0.65) is used.
+# 
+# Setting to 0.0 means only accept positive reranker scores (excellent/good
+# matches). Lower values (e.g., -2.0) accept more borderline matches.
+min_score_threshold: 0.0
+
+# ----------------------------------------------------------------------------
+# VECTOR SEARCH CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls the initial vector similarity search that retrieves candidates
+# from the database before reranking.
+
+# Maximum number of candidates to retrieve from vector search. This is the
+# initial pool of candidates that will be analyzed for reranker skip conditions
+# or sent to reranker. Reduced from 300 to 100 for efficiency with dynamic
+# reranking, as percentile-based analysis works well with smaller candidate sets.
+prefilter_limit: 100
+
+# Relaxed limit for fallback scenarios when initial search doesn't find enough
+# candidates. Used in context expansion and other fallback mechanisms.
 relaxed_limit: 500
 
-# Vector Search Parameters (Increased proportionally)
-ef_search: 200  # Higher ef_search for better HNSW search quality
+# HNSW (Hierarchical Navigable Small World) index parameter for vector search.
+# Higher values improve search quality but increase query time. This controls
+# how many neighbors are explored during the approximate nearest neighbor search.
+# Used for the initial prefilter search.
+ef_search: 200
+
+# HNSW parameter for relaxed/fallback searches. Higher than ef_search to ensure
+# better recall when initial search doesn't find enough candidates.
 ef_relaxed: 300
 
-# Clustering Configuration
+# ----------------------------------------------------------------------------
+# CLUSTERING CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls how similar test steps are grouped into clusters for analysis.
+# Currently used for data organization and potential future optimizations.
+
+# Clustering algorithm method. "agglomerative" uses hierarchical clustering
+# to group similar test steps together based on embedding similarity.
 clustering_method: "agglomerative"
+
+# Distance threshold for clustering. Steps with similarity above this threshold
+# are grouped into the same cluster. Lower values create more, smaller clusters.
 clustering_threshold: 0.22
+
+# Minimum number of steps required to form a cluster. Steps in clusters smaller
+# than this are not assigned to any cluster.
 min_cluster_size: 3
 
-# Fallback Configuration
+# ----------------------------------------------------------------------------
+# FALLBACK CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls fallback mechanisms when initial matching doesn't find good results.
+# These are safety nets for edge cases.
+
+# Whether to enable rule-based BDD step synthesis when no matches are found.
+# When enabled, system attempts to generate BDD steps using predefined rules.
+# Currently disabled - system only returns REUSED_TEMPLATE or NEW_BDD_REQUIRED.
 fallbacks:
-  enable_rule_synthesis: false  # Disabled - only REUSED or NEW_BDD_REQUIRED
+  enable_rule_synthesis: false
+
+  # Whether to enable LLM-based BDD step synthesis. Uses AI to generate new
+  # BDD steps when no matches are found. Currently disabled.
   enable_llm_synthesis: false
+
+  # Whether to expand search context when initial search fails. Tries broader
+  # searches or related terms to find matches. Useful for edge cases.
   enable_context_expansion: true
+
+  # Whether to use lexical (keyword-based) search as fallback. Uses PostgreSQL
+  # full-text search (tsvector) when vector search doesn't find good matches.
   enable_lexical_search: true
 
-# Batch Processing
+# ----------------------------------------------------------------------------
+# BATCH PROCESSING CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls how many items are processed together in batches for efficiency.
+
+# Number of items to process in a single batch. Used for embedding generation
+# and reranking. Larger batches are faster but use more memory. 32 is a good
+# balance for most systems.
 batch_size: 32
 
-# Normalization
-# Version 2.0 enables domain whitelist + action canonicalization
+# ----------------------------------------------------------------------------
+# NORMALIZATION CONFIGURATION
+# ----------------------------------------------------------------------------
+# Controls how text is normalized before embedding and matching.
+
+# Normalization version. Version 2.0 includes:
+#   - Domain term preservation (F-keys, ENTER, CONFIRM, etc.)
+#   - Action verb canonicalization (click→press, type→enter)
+#   - Count phrase preservation (e.g., "4 times" not replaced with <NUMBER>)
+#   - Structured metadata extraction (action_canonical, domain_terms, count_phrases)
+# This addresses issues where normalization was losing critical domain-specific
+# information that affected matching accuracy.
 normalization_version: "2.0"
 
-# Database Configuration
-# New database for bge-m3 feature branch
+# ----------------------------------------------------------------------------
+# DATABASE CONFIGURATION
+# ----------------------------------------------------------------------------
+# PostgreSQL database connection settings for storing embeddings and BDD steps.
+
 database:
+  # Database server hostname or IP address
   host: "localhost"
+  
+  # PostgreSQL server port (default is 5432)
   port: 5432
-  database: "teststep_rag_bgem3"  # New database for this feature branch
+  
+  # Database name. This is a dedicated database for the bge-m3 feature branch,
+  # separate from any legacy implementations to avoid conflicts.
+  database: "teststep_rag_bgem3"
+  
+  # PostgreSQL username
   user: "postgres"
+  
+  # PostgreSQL password
   password: "123456"
 
-# Dynamic Reranking Configuration (Percentile-Based)
-# Intelligently skips reranker when vector search scores show clear confidence
+# ----------------------------------------------------------------------------
+# DYNAMIC RERANKING CONFIGURATION
+# ----------------------------------------------------------------------------
+# Intelligently skips reranker when vector search scores show clear confidence,
+# saving significant processing time while maintaining quality. Uses percentile-
+# based analysis to adapt to different score distributions (low, medium, high).
+
 dynamic_reranking:
+  # Whether dynamic reranking is enabled. When true, system analyzes vector
+  # search scores and may skip reranker if confidence is high.
   enabled: true
-  target_top_k: 5  # Return top 5 results
-  
-  # Percentile-based skip conditions (ANY can trigger skip)
+
+  # Number of top results to return when reranker is skipped. Should match
+  # top_k_results for consistency.
+  target_top_k: 5
+
+  # Skip conditions for reranker. If ANY condition is met, reranker is skipped
+  # and vector search results are used directly. This saves ~100-150ms per query.
   skip_conditions:
-    # Condition 1: All top 5 above Xth percentile of all retrieved scores
-    min_percentile_rank: 90  # Top 5 must be above 90th percentile
-    
-    # Condition 2: Percentile gap between 5th and 6th candidate
-    percentile_gap_threshold: 10  # 5th must be >10 percentile points above 6th
-    
-    # Condition 3: Cluster separation (mean of top 5 vs rest)
-    cluster_separation: 0.10  # Mean of top 5 must be >0.10 above rest mean
-    
-    # Condition 4: Top dominance (top score very high, top 5 all high)
-    top_percentile_threshold: 95  # Top score must be above 95th percentile
-    top_k_min_percentile: 85  # All top 5 must be above 85th percentile (when top is high)
+    # Condition 1: Percentile Rank Check
+    # If all top 5 candidates are above the Xth percentile of all retrieved
+    # scores, skip reranker. This adapts to any score distribution - works
+    # whether scores are low (0.3-0.5) or high (0.8-0.9).
+    # Example: If 90th percentile is 0.75 and all top 5 are > 0.75, skip reranker.
+    min_percentile_rank: 90
 
-# Fine-Tuning (Optional)
+    # Condition 2: Percentile Gap Analysis
+    # If there's a significant gap (in percentile points) between the 5th and
+    # 6th candidate, it indicates clear separation between good and poor matches.
+    # Example: If 5th is at 92nd percentile and 6th is at 75th percentile
+    # (gap = 17 points > 10), skip reranker.
+    percentile_gap_threshold: 10
+
+    # Condition 3: Cluster Separation
+    # If the mean score of top 5 candidates is significantly higher than the
+    # mean of remaining candidates, it indicates a distinct high-quality cluster.
+    # Example: If top 5 mean = 0.80 and rest mean = 0.65 (separation = 0.15 > 0.10),
+    # skip reranker.
+    cluster_separation: 0.10
+
+    # Condition 4: Top Score Dominance
+    # If the top score is very high (above 95th percentile) AND all top 5 scores
+    # are above 85th percentile, it indicates a clear winner with strong support.
+    # Example: Top score = 0.92 (above 95th percentile of 0.90) and all top 5
+    # are above 85th percentile (0.85), skip reranker.
+    top_percentile_threshold: 95
+    top_k_min_percentile: 85
+
+# ----------------------------------------------------------------------------
+# FINE-TUNING CONFIGURATION (OPTIONAL)
+# ----------------------------------------------------------------------------
+# Settings for model fine-tuning and metrics collection. Currently not used
+# in production but available for future model optimization.
+
 fine_tuning:
+  # Whether fine-tuning is enabled. When false, uses pre-trained models only.
   enabled: false
+
+  # Directory path where fine-tuning metrics and evaluation results are saved.
   metrics_output_path: "./metrics/"
-
-
-
