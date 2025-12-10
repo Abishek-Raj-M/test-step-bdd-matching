@@ -1,0 +1,2018 @@
+﻿ID,Manual Steps,BDD Steps
+C61160429,"1. *Note down your till balance*
+
+Create a 15.00 Discretionary Free Bet  Redeem it  Place the bet directly in to the Alien File
+2. Locate the bet in the Alien file and use the 3 dots on top right hand side to select the Void Bet option
+3. Scan the bet receipt and check that the returns show as Zero  Finish and Payout F12  Check that your till balance has not changed","Scenario: Discretionary Voucher Settlement - Void Bet
+Given I am logged into the OMNIA terminal
+When I navigate to the Cash in shop page
+Then I get current till amounts
+And I have navigated to the translation page
+When I navigate to the dashboard page
+Then I generate DISCRETIONARY VOUCHER by using API
+| voucherValue |
+| 300          |
+Then I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+When I have navigated to the translation page
+And A betslip is scanned
+Then I grab the bet slip Id
+And User presses confirm
+Then I selected the SlipID from awaiting translation list
+And I entered stake '300' and proceed to selection page
+And I use keyboard shortcut to alien a bet
+When I select ""Horses"" as sport
+And I translate that slip to alien
+And I navigate and select alien slip from alien tab
+Then I void entire betslip
+When User scans a slip for payout through ctrl
+And Clicking Finish & Payout button pays out the bet
+And I Navigate and search for the bet slip
+And Check Total Returns value
+| value |
+| £0.00 |
+And I navigate to the Cash in shop page
+Then I verify till balance should be Unchanged
+
+#Need to create at lease 2 General Carousel From Admin App for respective shop for test data if data not available"
+C61393386,"1. Navigate to Dashboard 
+2. Select create voucher 
+3. Enter a value amount above max 20.00 (for all roles) with a reason typed in and authorized by Shop/duty manager selected 
+4. Enter a value amount equal to or lower than the max amount eg 10.00 
+5. Click on the Create voucher button 
+6. Click Finish 
+7. Dip the discretionary voucher in the scanner 
+8. Scan through a plain slip
+9. F12/Confirm 
+10. Repeat steps 1-9 twice more selecting authorized by Marketplace Manager and then Area Manager","Scenario: Discretionary Voucher- Check Creation and Redemption For All Roles
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+Then I generate DISCRETIONARY VOUCHER by using API
+| voucherValue | authorisedBy      |
+| 050          | SHOP/DUTY MANAGER |
+Then I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+When I have navigated to the translation page
+And A betslip is scanned
+Then I grab the bet slip Id
+And I confirm bet acceptance using F12
+Then Find the grabbed slip 1 from awaiting translation list
+When I navigate to the dashboard page
+Then I generate DISCRETIONARY VOUCHER by using API
+| voucherValue | authorisedBy        |
+| 050          | MARKETPLACE MANAGER |
+Then I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+When I have navigated to the translation page
+And A betslip is scanned
+Then I grab the bet slip Id
+And I confirm bet acceptance using F12
+Then Find the grabbed slip 1 from awaiting translation list
+When I navigate to the dashboard page
+Then I generate DISCRETIONARY VOUCHER by using API
+| voucherValue | authorisedBy |
+| 050          | AREA MANAGER |
+Then I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+When I have navigated to the translation page
+And A betslip is scanned
+Then I grab the bet slip Id
+And I confirm bet acceptance using F12
+Then Find the grabbed slip 1 from awaiting translation list"
+C65693486,"1. Scan through a plain slip
+2. Press ESC on the keyboard
+3. Press enter on the keyboard
+4. Scan through another plain slip, but instead of pressing ESC, click 'Cancel Transaction'
+
+Press enter on the keyboard when the popup appears
+5. Scan through a plain slip  select Grid/Connect as the MOP, enter any stake and Confirm
+6. Click 'Cancel' on the screen and then enter on the popup message
+7. Repeat steps 5 and 6 with Grid/Connect Cash and Grid MOPs","Scenario Outline: Enter key to dismiss 'Please keep cancelled receipt(s) with today's payouts' popup
+Given I am logged into the OMNIA terminal
+When I have navigated to the translation page
+And I scan a bet slip
+And I select payment ""<paymentMode>""
+Then I press the 'Esc' key
+And I press the Enter key
+And I scan a bet slip
+Then I cancel translation
+And I press the Enter key
+Examples:
+| paymentMode   |
+| debit         |
+| Cash          |
+| loyalty cash  |
+| Loyalty debit |
+
+#Turn off 'debit-card-declined' feature flag from Admin app"
+C65950786,"1. Login to the Omnia application.
+2. Strike a bet slip and translate on your football market, in the market part of translation screen type in F
+3. Select First Goal scorer scorecast
+4. Check the header of the modal","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C65950788,"1. Login to the Omnia application.
+
+
+2. Strike a bet and translate on your football event.
+
+
+3. Select the above mentioned event with both first goal scorer and correct score markets. Type in F in the Market
+
+Repeat above but type in Fir instead of F","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C65950787,"1. Login to the Omnia application.
+2. Strike a bet slip and translate on your football market, in the market part of translation screen type in F
+3. Select First Goal scorer scorecast
+4. Select First goal scorer.
+5. Click on any selection
+6. Try to add multiple selections on FGS 
+7. Change your FGS selection","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C65950823,"1. Login to the Omnia application.
+2. Strike a bet slip and translate on your football market, in the market part of translation screen type in F
+3. Select First Goal scorer scorecast
+4. Choose a first goal scorer and correct score 
+
+
+5. Add stake and confirm the betslip
+
+
+
+6. Finish the translation
+7. Navigate to Completed Translations 
+8. Restart the translation of the above bet and repeat to step 4
+9. Add another first goalscorer and correct score 
+
+ 10. Delete the first score cast 
+ 11. Add in 3 score casts on your score cast modal 
+12. Take a note of the score cast prices
+13. Delete the middle scorecast","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C66016585,"1. Login to the Omnia application
+2. Strike a bet slip and translate on your football market, in the market part of translation screen type in F
+3. Select First goal scorecast 
+4. Check user is able to see the translated slip image behind
+ 5. While the scorecast is open try and change the sport and event 
+
+
+6. Add FGS and CS market selections & stake, confirm the scorecast.
+7. Finish the translation.","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C66035644,"1. Login to the Omnia application.
+2. Strike a bet slip and translate on your football market, in the market part of translation screen type in F
+3. Select First Goal scorer scorecast
+4. Choose a first scorer and correct score but no stake
+
+ 5. Add in a stake
+6. Take the stake out 
+7. Add in a stake and press the red bin 
+8. Add in another score cast and press f12","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C65950811,"1. Login to the Omnia application.
+2. Try to translate a bet on football event - First goal scorecast market.
+3. Try to add one FGS market selections and multiple CS market selections(atleast 6 selections).","Scenario: Add multiple selections from correct score market (atleast 6) and check the modal UI.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY2' with following details
+| urlType | marketName            | selectionNames                                                                     | odds                                      |
+| bwin    | First Goal Scorecast  | N/A                                                                                | N/A                                       |
+| -       | Correct Score         | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goalscorer      | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | selectMarket | selectMarketWithPartialName | marketName           |
+| 1               | Football  | No           | f,fir                       | First Goal Scorecast |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I get scorecast popup size
+Then I verify options in dropdown
+| inputFieldName 	    | selectionNames																                                 | teamAndOdds 																				             |
+| FIRST GOAL SCORER   | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,C Ronaldo,Leo Messi | TeamX@8/5,TeamX@13/5,TeamX@18/5,TeamX@9/2,TeamX@19/4,TeamX@11/2 |
+| CORRECT SCORE LINES | TeamX 2-0,TeamX 2-1,TeamX 4-0,TeamX 1-0,TeamX 3-0,TeamX 3-2                    | 13/5,18/5,19/4,8/5,9/2,11/2                                     |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+| Leo Messi         | TeamX 3-0         |
+| C Ronaldo         | TeamX 3-0         |
+Then I verify scorecast popup size is same
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 15    |
+| 2     | 15    |
+| 3     | 15    |
+| 4     | 15    |
+| 5     | 15    |
+| 6     | 25    |
+And I click on add scorecast to betslip
+When I click on Edit BetType 1
+Then I verify bet criteria is ""DISABLED""
+And I verify bet type is ""DISABLED""
+And I verify stake box is highlighted
+And I click on save button
+Then I can finish translation"
+C65950820,,"Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C65950821,"1. Login to the Omnia application.
+2. Try to translate a bet on football - FGScorecast market.
+3. Click on FGS market drop down and select any selection.
+4. Click on CS market drop down and select any selection.
+5. Check the scorecasts below.","Scenario: Add multiple selections from correct score market (atleast 6) and check the modal UI.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY2' with following details
+| urlType | marketName            | selectionNames                                                                     | odds                                      |
+| bwin    | First Goal Scorecast  | N/A                                                                                | N/A                                       |
+| -       | Correct Score         | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goalscorer      | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | selectMarket | selectMarketWithPartialName | marketName           |
+| 1               | Football  | No           | f,fir                       | First Goal Scorecast |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I get scorecast popup size
+Then I verify options in dropdown
+| inputFieldName 	    | selectionNames																                                 | teamAndOdds 																				             |
+| FIRST GOAL SCORER   | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,C Ronaldo,Leo Messi | TeamX@8/5,TeamX@13/5,TeamX@18/5,TeamX@9/2,TeamX@19/4,TeamX@11/2 |
+| CORRECT SCORE LINES | TeamX 2-0,TeamX 2-1,TeamX 4-0,TeamX 1-0,TeamX 3-0,TeamX 3-2                    | 13/5,18/5,19/4,8/5,9/2,11/2                                     |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+| Leo Messi         | TeamX 3-0         |
+| C Ronaldo         | TeamX 3-0         |
+Then I verify scorecast popup size is same
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 15    |
+| 2     | 15    |
+| 3     | 15    |
+| 4     | 15    |
+| 5     | 15    |
+| 6     | 25    |
+And I click on add scorecast to betslip
+When I click on Edit BetType 1
+Then I verify bet criteria is ""DISABLED""
+And I verify bet type is ""DISABLED""
+And I verify stake box is highlighted
+And I click on save button
+Then I can finish translation"
+C65950822,"1. 
+Login to the Omnia application.
+2. Try to translate a bet on football - FGScorecast market.
+3. Click on FGS market drop down and select any selection.","Scenario: Add multiple selections from correct score market (atleast 6) and check the modal UI.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY2' with following details
+| urlType | marketName            | selectionNames                                                                     | odds                                      |
+| bwin    | First Goal Scorecast  | N/A                                                                                | N/A                                       |
+| -       | Correct Score         | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goalscorer      | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | selectMarket | selectMarketWithPartialName | marketName           |
+| 1               | Football  | No           | f,fir                       | First Goal Scorecast |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I get scorecast popup size
+Then I verify options in dropdown
+| inputFieldName 	    | selectionNames																                                 | teamAndOdds 																				             |
+| FIRST GOAL SCORER   | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,C Ronaldo,Leo Messi | TeamX@8/5,TeamX@13/5,TeamX@18/5,TeamX@9/2,TeamX@19/4,TeamX@11/2 |
+| CORRECT SCORE LINES | TeamX 2-0,TeamX 2-1,TeamX 4-0,TeamX 1-0,TeamX 3-0,TeamX 3-2                    | 13/5,18/5,19/4,8/5,9/2,11/2                                     |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+| Leo Messi         | TeamX 3-0         |
+| C Ronaldo         | TeamX 3-0         |
+Then I verify scorecast popup size is same
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 15    |
+| 2     | 15    |
+| 3     | 15    |
+| 4     | 15    |
+| 5     | 15    |
+| 6     | 25    |
+And I click on add scorecast to betslip
+When I click on Edit BetType 1
+Then I verify bet criteria is ""DISABLED""
+And I verify bet type is ""DISABLED""
+And I verify stake box is highlighted
+And I click on save button
+Then I can finish translation"
+C65862250,"1. Login to Omnia.
+2. Verify F2 short cut key functionality is working on below mentioned tabs:
+
+ Dashboard ( Except """"scan card, free bet , virtual football prices/ results)
+
+ Translations
+
+ Prices / Results 
+
+ Search
+
+ Transfers
+
+ SSBT
+
+
+3. Verify F2 short cut key functionality should not work with the below mentioned tabs:
+
+ Bingo
+
+ Lotto 
+
+ payout 
+
+ Bet acceptance 
+
+ Alerts 
+
+
+ 
+
+ ","Scenario: F2 short cut key functionality
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+And I press the F2 key
+Then I verify cash Declaration till page is ""visible""
+And I click back arrow in terminal declaration
+When I select Translations
+And I press the F2 key
+Then I verify cash Declaration till page is ""visible""
+And I click back arrow in terminal declaration
+When I navigate to the Pricing Page
+And I press the F2 key
+Then I verify cash Declaration till page is ""visible""
+And I click back arrow in terminal declaration
+When I navigate to the Search page
+And I press the F2 key
+Then I verify cash Declaration till page is ""visible""
+And I click back arrow in terminal declaration
+When I navigate to transfer page
+And I press the F2 key
+Then I verify cash Declaration till page is ""visible""
+And I click back arrow in terminal declaration
+When I select the Bingo tab
+And I press the F2 key
+Then I verify cash Declaration till page is ""not visible""
+And I cancel translation
+When I select the Lotto tab
+And I press the F2 key
+Then I verify cash Declaration till page is ""not visible""
+And I cancel translation
+When I navigate to the Payout page
+And I press the F2 key
+Then I verify cash Declaration till page is ""not visible""
+And I click Cancel Transaction button
+And A betslip is scanned
+And I press the F2 key
+Then I verify cash Declaration till page is ""not visible"""
+C1107134,"1. Translations tab displays the amount of slips awaiting Translation in brackets
+2. Click on the Translations tab","Scenario: Translation now and slip verification
+Given I am logged into the OMNIA terminal
+When Dashboard translation buttons open translation list
+Then Bet slip number increases if slip is accepted
+And I verify Bet slip count varies with respect to bet slip transitions"
+C1107135,1. See e2e automation scripts,"Scenario: Translation now and slip verification
+Given I am logged into the OMNIA terminal
+When Dashboard translation buttons open translation list
+Then Bet slip number increases if slip is accepted
+And I verify Bet slip count varies with respect to bet slip transitions"
+C1322067,"1. Make note of the amount of slips Awaiting Translation
+2. Scan through and confirm a number of bets (in my example I will scan 10)","Scenario: Translation now and slip verification
+Given I am logged into the OMNIA terminal
+When Dashboard translation buttons open translation list
+Then Bet slip number increases if slip is accepted
+And I verify Bet slip count varies with respect to bet slip transitions"
+C66049443,"1. Login to the Omnia application.
+2. Struck a bet slip.
+3. Try to translate a bet on football event as per preconditions provide the name in event box.
+4. Check the markets dropdown.
+5. Check the order of the markets.","Scenario: Check the UI after clicking on First Goal Scorecast market.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY1' with following details
+| urlType | marketName                                 | selectionNames                                                                     | odds                                      |
+| bwin    | Match Result                               | TeamX,TeamY,Draw                                                                   | N/A                                       |
+| -       | First Goalscorer                           | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+| -       | Correct Score                              | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goal Scorecast                       | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score                        | N/A                                                                                | N/A                                       |
+| -       | Both Teams to Score and Either Team to Win | N/A                                                                                | N/A                                       |
+| -       | Half Time / Full Time                      | TeamX/TeamX,Draw/Draw,TeamY/TeamY                                                  | N/A                                       |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType |
+| 1               | Football  |
+And I verify and select created event '1' details suggestion for translation
+| verifyAllMarkets |
+| YES              |
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I verify first scorecast pop-up with event name 'TeamX vs TeamY'
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Leo Messi       | TeamX 2-0         |
+Then I verify add scorecast to betslip is 'disabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 000   |
+Then I verify add scorecast to betslip is 'disabled'
+When I delete goalscorer row no 1 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Bhaichung Bhutia  | TeamX 2-0         |
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 100   |
+Then I verify add scorecast to betslip is 'enabled'
+And I click on add scorecast to betslip
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+Then I can finish translation
+And Find the slip from completed translation list
+Then I verify translated slip details
+| selection | bets | stake | criteria  | betType | cost |
+| 1         | 1    | 1.00  | Scorecast | Single  | 1.00 |
+And I am able to restart translation
+And I entered stake ""100"" and proceed to selection page
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+When I delete goalscorer row no 2 and verify other entries
+When I select first goal scorer and correct score lines
+| firstGoalScorer | correctGoalScorer |
+| Sunil Chhetri   | TeamX 2-0         |
+| Leo Messi       | TeamX 1-0         |
+When I delete goalscorer row no 2 and verify other entries"
+C66049477,"1. Login to the Omnia application
+2. Struck a bet slip and try to translate on above mentioned precondition event.
+3. Go to that slip in awaiting translations and confirm the stake.
+4. Try to add section 1 with match betting market.
+5. Try to add section 2 with both FGS and CS market.
+6. Try to add section 3 with BTTS market.
+7. Dont translate the bet yet and try to edit the section 2 stake.
+8. Complete the translation and go to completed translation and try to edit section 2 there.
+9. Repeat the same process by selecting FIRST GOAL SCORECAST market in section 2.","Scenario: Add multiple selections from correct score market (atleast 6) and check the modal UI.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY2' with following details
+| urlType | marketName            | selectionNames                                                                     | odds                                      |
+| bwin    | First Goal Scorecast  | N/A                                                                                | N/A                                       |
+| -       | Correct Score         | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goalscorer      | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | selectMarket | selectMarketWithPartialName | marketName           |
+| 1               | Football  | No           | f,fir                       | First Goal Scorecast |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I get scorecast popup size
+Then I verify options in dropdown
+| inputFieldName 	    | selectionNames																                                 | teamAndOdds 																				             |
+| FIRST GOAL SCORER   | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,C Ronaldo,Leo Messi | TeamX@8/5,TeamX@13/5,TeamX@18/5,TeamX@9/2,TeamX@19/4,TeamX@11/2 |
+| CORRECT SCORE LINES | TeamX 2-0,TeamX 2-1,TeamX 4-0,TeamX 1-0,TeamX 3-0,TeamX 3-2                    | 13/5,18/5,19/4,8/5,9/2,11/2                                     |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+| Leo Messi         | TeamX 3-0         |
+| C Ronaldo         | TeamX 3-0         |
+Then I verify scorecast popup size is same
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 15    |
+| 2     | 15    |
+| 3     | 15    |
+| 4     | 15    |
+| 5     | 15    |
+| 6     | 25    |
+And I click on add scorecast to betslip
+When I click on Edit BetType 1
+Then I verify bet criteria is ""DISABLED""
+And I verify bet type is ""DISABLED""
+And I verify stake box is highlighted
+And I click on save button
+Then I can finish translation"
+C66035648,"1. Login to the Omnia application.
+2. Strike a bet and translate on your football event.
+3. Select the above mentioned event with both first goal scorer and correct score markets. Type in F in the Market
+
+Repeat above but type in Fir instead of F
+4. Select First Goal scorer scorecast
+5. Press Cancel
+6. Repeat step 4 
+7. Add in a first goal scorer and correct score","Scenario: Add multiple selections from correct score market (atleast 6) and check the modal UI.
+Given I am logged into the OMNIA terminal
+When I create a 'Football' event named as 'TeamX vs TeamY2' with following details
+| urlType | marketName            | selectionNames                                                                     | odds                                      |
+| bwin    | First Goal Scorecast  | N/A                                                                                | N/A                                       |
+| -       | Correct Score         | TeamX @ 1-0,TeamX @ 2-0,TeamX @ 2-1,TeamX @ 3-0,TeamX @ 3-2,TeamX @ 4-0,Draw @ 0-0 | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99, 1.67  |
+| -       | First Goalscorer      | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,Leo Messi, C Ronaldo    | 2.60, 3.60, 4.60, 5.60, 6.60, 5.99        |
+And I have navigated to the translation page
+Then I accept a bet
+And I translate a slip with stake ""100""
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | selectMarket | selectMarketWithPartialName | marketName           |
+| 1               | Football  | No           | f,fir                       | First Goal Scorecast |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+Then I verify cancel button is enabled
+And I close the edit section
+Then I select and verify created event details for translation
+| eventSequenceNo | sportType | market               |
+| 1               | Football  | First Goal Scorecast |
+Then I get scorecast popup size
+Then I verify options in dropdown
+| inputFieldName 	    | selectionNames																                                 | teamAndOdds 																				             |
+| FIRST GOAL SCORER   | Sunil Chhetri,Bhaichung Bhutia,Shabbir Ali,Sandesh Jinghan,C Ronaldo,Leo Messi | TeamX@8/5,TeamX@13/5,TeamX@18/5,TeamX@9/2,TeamX@19/4,TeamX@11/2 |
+| CORRECT SCORE LINES | TeamX 2-0,TeamX 2-1,TeamX 4-0,TeamX 1-0,TeamX 3-0,TeamX 3-2                    | 13/5,18/5,19/4,8/5,9/2,11/2                                     |
+When I select first goal scorer and correct score lines
+| firstGoalScorer   | correctGoalScorer |
+| Leo Messi         | TeamX 1-0         |
+| Sunil Chhetri     | TeamX 2-0         |
+| Bhaichung Bhutia  | TeamX 3-2         |
+| Shabbir Ali       | TeamX 2-1         |
+| Leo Messi         | TeamX 3-0         |
+| C Ronaldo         | TeamX 3-0         |
+Then I verify scorecast popup size is same
+When I enter stakes for goals scorecast
+| rowNO | stake |
+| 1     | 15    |
+| 2     | 15    |
+| 3     | 15    |
+| 4     | 15    |
+| 5     | 15    |
+| 6     | 25    |
+And I click on add scorecast to betslip
+When I click on Edit BetType 1
+Then I verify bet criteria is ""DISABLED""
+And I verify bet type is ""DISABLED""
+And I verify stake box is highlighted
+And I click on save button
+Then I can finish translation"
+C1107136,"1. Navigate to Dashboard
+2. Select 'Shop Finances' from within the Admin section","Scenario: Dashboard confirmation
+Given I am logged into the OMNIA terminal
+When I am on the dashboard page I can confirm all buttons work and exist
+Then confirmation of all buttons existing"
+C1107137,"1. Select 'Customer List' under the Admin section within Dashboard
+2. Customers is displayed with the focus on Self Excluded","Scenario: Dashboard confirmation
+Given I am logged into the OMNIA terminal
+When I am on the dashboard page I can confirm all buttons work and exist
+Then confirmation of all buttons existing"
+C1165689,"1. Select the Dashboard tab
+2. Under the Admin section you can see the Responsibility & Compliance tab","Scenario: Dashboard confirmation
+Given I am logged into the OMNIA terminal
+When I am on the dashboard page I can confirm all buttons work and exist
+Then confirmation of all buttons existing"
+C1107138,"1. Select the Dashboard tab
+2. Under the Admin section 'Week To Date Report' should be visible
+3. Select the 'Week To Date Report' button (via mouse or touchscreen)","Scenario: Dashboard confirmation
+Given I am logged into the OMNIA terminal
+When I am on the dashboard page I can confirm all buttons work and exist
+Then confirmation of all buttons existing"
+C1316416,"1. Follow the Pre -condition
+
+Select the Dashboard tab
+2. Under the Admin section 'Debit Card' is displayed
+3. Select the 'Debit Card' tab","Scenario: Dashboard confirmation
+Given I am logged into the OMNIA terminal
+When I am on the dashboard page I can confirm all buttons work and exist
+Then confirmation of all buttons existing"
+C60068852,"1. Click on 'Dashboard' on left panel
+2. Check 'Quick access' section","Scenario: Check display of 'Create Voucher' button under 'Quick Access' menu in Omnia
+& Check display of 'Create Voucher Creation Screen'
+& Check creation of 'Discretionary Voucher'
+Given I am logged into the OMNIA terminal
+And I navigate to the dashboard page
+When I move to Quick access section
+And Create Voucher tile should be available to select
+And I Click on Create Voucher on the Quick Access section of the Dashboard
+Then The Voucher Creation Screen should contain expected elements
+When I click Cancel button of the Voucher Creation Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 2100
+And I enter a Acceptable Reason
+Then User should notice a message about Max voucher value for Operator
+When I clear 'VOUCHER VALUE'
+And I enter a Voucher value of 2000
+Then User should NOT notice a message about Max voucher value for Operator
+When I select Shop/Duty Manager from authorised by option
+Then Create voucher button should be enabled
+When I select Marketplace Manager from authorised by option
+Then Create voucher button should be enabled
+When I select Area Manager from authorised by option
+Then Create voucher button should be enabled
+When I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 1900
+When I enter a Acceptable Reason
+And I select Marketplace Manager from authorised by option
+And I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 1800
+When I enter a Acceptable Reason
+And I select Shop/Duty Manager from authorised by option
+And I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard"
+C60068853,"1. Click on 'Create Voucher' on the Quick Access section of the Dashboard
+2. Select Cancel","Scenario: Check display of 'Create Voucher' button under 'Quick Access' menu in Omnia
+& Check display of 'Create Voucher Creation Screen'
+& Check creation of 'Discretionary Voucher'
+Given I am logged into the OMNIA terminal
+And I navigate to the dashboard page
+When I move to Quick access section
+And Create Voucher tile should be available to select
+And I Click on Create Voucher on the Quick Access section of the Dashboard
+Then The Voucher Creation Screen should contain expected elements
+When I click Cancel button of the Voucher Creation Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 2100
+And I enter a Acceptable Reason
+Then User should notice a message about Max voucher value for Operator
+When I clear 'VOUCHER VALUE'
+And I enter a Voucher value of 2000
+Then User should NOT notice a message about Max voucher value for Operator
+When I select Shop/Duty Manager from authorised by option
+Then Create voucher button should be enabled
+When I select Marketplace Manager from authorised by option
+Then Create voucher button should be enabled
+When I select Area Manager from authorised by option
+Then Create voucher button should be enabled
+When I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 1900
+When I enter a Acceptable Reason
+And I select Marketplace Manager from authorised by option
+And I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 1800
+When I enter a Acceptable Reason
+And I select Shop/Duty Manager from authorised by option
+And I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard"
+C60068854,"1. Select 'Create Voucher' under 'Quick access' menu on Dashboard
+2. Enter a value above the max allowed for you logged in job role (all set at £20 at present so enter +£20) > Select Reason box to complete
+3. Delete Voucher Value and enter amount as £20 or less > Select Reason box to complete
+4. Enter text to confirm reason and move to the next box > Authorised By
+5. Select each option > Shop/Duty Manager > Change to Marketplace Manager > Change to Area Manager
+6. Select Create Voucher for Area Manager
+7. Select Finish
+8. Repeat steps 1-7 creating vouchers for Shop/Duty Manager and Marketplace Manager","Scenario: Check display of 'Create Voucher' button under 'Quick Access' menu in Omnia
+& Check display of 'Create Voucher Creation Screen'
+& Check creation of 'Discretionary Voucher'
+Given I am logged into the OMNIA terminal
+And I navigate to the dashboard page
+When I move to Quick access section
+And Create Voucher tile should be available to select
+And I Click on Create Voucher on the Quick Access section of the Dashboard
+Then The Voucher Creation Screen should contain expected elements
+When I click Cancel button of the Voucher Creation Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 2100
+And I enter a Acceptable Reason
+Then User should notice a message about Max voucher value for Operator
+When I clear 'VOUCHER VALUE'
+And I enter a Voucher value of 2000
+Then User should NOT notice a message about Max voucher value for Operator
+When I select Shop/Duty Manager from authorised by option
+Then Create voucher button should be enabled
+When I select Marketplace Manager from authorised by option
+Then Create voucher button should be enabled
+When I select Area Manager from authorised by option
+Then Create voucher button should be enabled
+When I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 1900
+When I enter a Acceptable Reason
+And I select Marketplace Manager from authorised by option
+And I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard
+When I Click on Create Voucher on the Quick Access section of the Dashboard
+And I enter a Voucher value of 1800
+When I enter a Acceptable Reason
+And I select Shop/Duty Manager from authorised by option
+And I click on Create voucher button
+Then Pop Up appears on Omnia showing Voucher Created
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard"
+C61160430,"1. Note down your till balance
+Create a 10.00 Discretionary Free Bet and redeem it by placing the bet on a Non Runner in an event that has not already started
+2. Once you have seen that the bet is settled in Completed Translations, scan the bet receipt to check returns
+3. Select to Finish and Payout F12","Scenario: Discretionary Voucher Settlement - Non Runner
+Given I run Collection
+| collection                 | marketTypeID | eventName                      |
+| HORSE-TESTEVENT-API.json   | 1894         | HORSE-TESTEVENT-API-Non Runner |
+When I am logged into the OMNIA terminal
+And I navigate to the Cash in shop page
+When I get current till amounts
+And I navigate to the dashboard page
+And I generate DISCRETIONARY VOUCHER by using API
+| paymentType | voucherValue |
+| CASH        | 100          |
+When I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+And A betslip is scanned
+And User presses confirm
+When I have navigated to the translation page
+And Grab the slip from translation list and set a stake
+And I set the time and location for camapaign bets with below details
+|eventName                       | selectionName  | odds  |
+|HORSE-TESTEVENT-API-Non Runner  | Horse B N/R    |  M    |
+When I click on add button
+And I select proceed for betType
+And I select bet criteria Win
+When I select bet type 'Single'
+And I add bet type
+When I can finish translation
+And User scans a slip for payout through ctrl
+Then I verify slip summary details on payout screen
+| message                    | section | betReturns |
+| 1/1 bets have been settled | 1       | 0.00       |
+When Pressing F12 pays out the bet
+And I have navigated to the completed translation list page
+Then I verify accepted marksense bet with details
+|   details |
+|   0.00    |
+When I navigate to the Cash in shop page
+Then I verify till balance should be Updated with stake
+| stake  |
+| 0.00   |"
+C61160431,"1. Note down your till balance
+Create a £20 Discretionary Free Bet and redeem it by placing a bet on a race that has already finished
+2. Scan the bet receipt once the bet shows as settled in Completed Translations
+3. Press F12 Finish and Payout","Scenario: Discretionary Voucher Settlement - Late Bet
+Given I am logged into the OMNIA terminal
+When I create 1 events with eventName 'Rockingham 10' with market 'Win or Each Way' for day 'Today' with isOff value 'yes' and settle 'no'
+And I wait for ""30"" seconds
+And I navigate to the Cash in shop page
+When I get current till amounts
+And I navigate to the dashboard page
+And I generate DISCRETIONARY VOUCHER by using API
+| voucherValue |
+| 100          |
+When I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+And A betslip is scanned
+And User presses confirm
+When I have navigated to the translation page
+And Grab the slip from translation list and set a stake
+And I have translated a single selection for the sport 'Virtual Racing' and 'Rockingham' event and time selection ""Yes""
+|finishTranslation|
+| yes             |
+# And User scans a slip for payout through ctrl
+# When Click manually settle button
+And User scans a slip for payout through ctrl
+Then I verify slip summary details on payout screen
+| message                    | section | betReturns |
+| 1/1 bets have been settled | 1       | 0.00       |
+When Pressing F12 pays out the bet
+And I have navigated to the completed translation list page
+Then I verify accepted marksense bet with details
+|   details |
+|   0.00    |
+When I navigate to the Cash in shop page
+Then I verify till balance should be Updated with stake
+| stake  |
+| 0.00   |"
+C61160436,"1. Navigate to Dashboard
+2. Click on the """"Create Voucher"""" button 
+3. Enter a voucher value amount in the voucher value box 
+4. Enter a reason in the reason box eg here is 'test'
+5. Click on authorised by box 
+6. Select a role from the dropdown list eg here shop/duty manager 
+7. Click on create voucher button 
+8. Click on the Green Finish button 
+9. Dip the voucher in the scanner 
+10. Scan through a plain slip and enter the full voucher amount
+11. Press F12 to confirm the bet 
+12. Navigate to awaiting translations to locate the bet  
+13. Click on the bet to begin translation 
+14. Enter stake and press enter 
+15. Click on the arrow at the top of the bet slip to view payment method
+
+16. Proceed to add selections and complete translation 
+17. Locate your slip in completed translations and click on it to open 
+18. Dip the slip for payout 
+19. Press F12 to confirm payout 
+20. Dip the paid out slip 
+21. Click on view bet details","Scenario: Discretionary Voucher- Check Payment Type On Translation And Payout
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+And I generate DISCRETIONARY VOUCHER by using API
+| voucherValue |
+| 100          |
+When I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+And I scan a plain slip without stake
+And I get the bet slip Id
+When I grab the bet slip Id
+And User presses confirm
+And I have navigated to the translation page
+Then I verify payment details of scanned slips in translation page
+| MOP     | stake  |
+| Voucher | 1.00   |
+When Find the grabbed slip 1 from search page
+Then I verify translated slip details
+| mode_of_payment  |
+| VOUCHER          |
+When I translate a default 'HORSES' with stake 100
+And Find the grabbed slip 1 from search page
+Then I verify translated slip details
+| mode_of_payment | Methods_of_payout |
+| Voucher         | Cash              |
+When User scan a grabed slip 1 for payout through ctrl
+And Click manually settle button
+And User clicks manual settle section
+And Enter the return value
+| value |
+| 100   |
+And User selects confirm
+Then I verify following details on payout screen
+| payoutToMOP |
+| Cash        |
+When Pressing F12 pays out the bet
+And User scan a grabed slip 1 for payout through ctrl
+Then I verify bet payout method as 'Cash'
+When I click on View Bet Details
+Then I verify translated slip details
+| mode_of_payment | Methods_of_payout |
+| Voucher         | Cash              |"
+C61160425,"1. Navigate to main Dashboard - Create Voucher
+2. Enter Voucher Value - Reason - Authorised By
+3. Create Voucher 
+4. Check details on Voucher","Scenario: Discretionary Voucher- Check Printed Details
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+Then I navigate to create voucher page
+Then I enter '100' as voucher value
+Then I enter 'just for testing' as reason
+Then I select authorised by value
+| authorisedby      |
+| Shop/Duty Manager |
+And verify create voucher button is 'Enabled'
+When I click on Create voucher button
+And I wait for ""5"" seconds
+Then Pop Up appears on Omnia showing Voucher Created
+And I verify popup displayed for created voucher
+| message                                        | heading             |
+| Voucher value: £1.00\nVoucher has been printed.| Voucher created     |
+When I click Finish button of the Created Voucher Screen
+Then User should be taken back to the Dashboard"
+C60068856,"1. Make a note of your till balance and Scan Discretionary Voucher
+2. Scan a slip
+3. Confirm (F12)
+
+
+4. Go to translations and select to translate on to a future event
+5. Check Till Balance
+
+
+6. Find the bet in OB and settle for £100
+7. Dip the receipt to payout
+8. Finish & Payout (F12) and check Till balance
+9. Repeat steps 1-8 but instead of scanning Voucher, Select Dashboard > Free Bet and enter the Voucher Code and manually settle the bet (not via OpenBet).  Manual settlement = Full value paid e.g. settle for £100 = Payout £100","Scenario: Discretionary Voucher can be used
+Given I am logged into the OMNIA terminal
+When I navigate to the Cash in shop page
+And I get current till amounts
+When I navigate to the dashboard page
+And I generate DISCRETIONARY VOUCHER by using API
+| voucherValue |
+| 1000         |
+And I click and scan the FREE BET DISCRETIONARY VOUCHER from dashboard
+When I accept a connect card bet
+| betType |
+| Voucher |
+When Find the grabbed slip 1 from search page
+And I entered stake '10.00' and proceed to selection page
+And I add selection with following details
+| sportType           | selectionName | odds |
+| Horses & Greyhounds | Pharoh Jake   | SP   |
+Then I proceed bet for Default
+| setStake |
+| 10.00     |
+Then I can finish translation
+When I navigate to the Cash in shop page
+Then I verify till balance should be Unchanged
+And I fetch the slip details from API
+| slipNo | sectionIndex | keyName      |
+| 1      | 1            | GET-ALL-JSON |
+Then I hit the OB Bet Settlement API
+| sectionIndex | betNumber | actionType | winningsValue |
+| 1            | 1         | win        | 40.00         |
+And User scan a grabed slip 1 for payout through ctrl
+And Pressing F12 pays out the bet
+When I navigate to the Cash in shop page
+Then I verify till balance should be Updated with stake
+| stake |
+| -30   |
+And I get current till amounts
+When I navigate to the dashboard page
+And I generate DISCRETIONARY VOUCHER by using API
+| voucherValue |
+| 1000         |
+And I scan 'DISCRETIONARY VOUCHER' number 2 through ctrl
+When I accept a connect card bet
+| betType |
+| Voucher |
+When Find the grabbed slip 2 from search page
+And I entered stake '10.00' and proceed to selection page
+And I add selection with following details
+| sportType           | selectionName | odds |
+| Horses & Greyhounds | Pharoh Jake   | SP   |
+Then I proceed bet for Default
+| setStake |
+| 10.00     |
+Then I can finish translation
+When I navigate to the Cash in shop page
+Then I verify till balance should be Unchanged
+And User scan a grabed slip 2 for payout through ctrl
+When Click manually settle button
+Then User clicks manual settle section
+And Enter the return value
+| value |
+| 3000  |
+And User selects confirm
+And Pressing F12 pays out the bet
+When I navigate to the Cash in shop page
+Then I verify till balance should be Updated with stake
+| stake |
+| -30   |"
+C65818967,"1. Login to Omnia.
+2. Click on 'Customer list' from Dashboard in 'Admin' section.
+3. Click on 'Action list' tab from customers page.
+4. * Alias 
+* Threshold limit reached
+* Exception date
+* Last Bet
+* Action Required
+
+Above headers are displayed in Action list.","Scenario: Verify the Action list count on the header of the tab and respective Column headers its sort filters and pagination
+Given I am logged into the OMNIA terminal
+When I navigate to the customer alias page from Customer List in Dashboard
+Then I verify display of Action list count on the header of the tab
+When I click on ""Action List"" tab under customer list
+Then I verify count of records wrt header count of action list
+And I verify Sort filter is applied ""false"" on column ""THRESHOLD LIMIT REACHED""
+And I verify Sort filter is applied ""false"" on column ""CUSTOMER STATUS""
+Then I verify Sort filter is applied ""false"" on column ""BLOCKED DATE""
+And I verify Sort filter is applied ""false"" on column ""ALIAS""
+Then I verify Sort filter is applied ""false"" on column "" EXCEPTION DATE""
+And I verify Sort filter is applied ""false"" on column ""LAST BET""
+Then I verify Sort filter is applied ""false"" on column ""ACTION REQUIRED""
+And I verify display of pagination Filter on page ""false""
+
+#This case need to be tested on ROI Shop,Hence NA for stage2/4"
+C65818970,"1. Login to Omnia.
+2. Click on 'Customer list' from Dashboard in 'Admin' section.
+3. Verify the Action list count on the header of the tab.","Scenario: Verify the Action list count on the header of the tab and respective Column headers its sort filters and pagination
+Given I am logged into the OMNIA terminal
+When I navigate to the customer alias page from Customer List in Dashboard
+Then I verify display of Action list count on the header of the tab
+When I click on ""Action List"" tab under customer list
+Then I verify count of records wrt header count of action list
+And I verify Sort filter is applied ""false"" on column ""THRESHOLD LIMIT REACHED""
+And I verify Sort filter is applied ""false"" on column ""CUSTOMER STATUS""
+Then I verify Sort filter is applied ""false"" on column ""BLOCKED DATE""
+And I verify Sort filter is applied ""false"" on column ""ALIAS""
+Then I verify Sort filter is applied ""false"" on column "" EXCEPTION DATE""
+And I verify Sort filter is applied ""false"" on column ""LAST BET""
+Then I verify Sort filter is applied ""false"" on column ""ACTION REQUIRED""
+And I verify display of pagination Filter on page ""false""
+
+#This case need to be tested on ROI Shop,Hence NA for stage2/4"
+C65818973,"1. Login to Omnia shop ex: 8001
+2. Place a bet with =1500 assigning a newly created alias
+3. Click on 'Customer list' from Dashboard in 'Admin' section.
+4. Customers page is opened.
+5. Logout to Omnia and Login in to different shop ex : 8002
+navigate to Customers page and Action tab
+Verify the Customer which we placed bet in above shop","Scenario: Verify if the shop is having only their customers in the Action list if they have reached the limit
+Given I am logged into the OMNIA terminal
+When I create ""otc"" customer through API
+And I update alias name from customer response
+And I strike a bet for Alias
+| stake   | aliasIndex |
+| 1500.00 | 1          |
+Then I click on NO CONCERNS button of Safer Gambling Concern popup
+When I navigate to the customer alias page from Customer List in Dashboard
+When I click on ""Action List"" tab under customer list
+Then I verify the display of interaction record on action list page
+| alias |
+| no    |
+When I am able to change the shop id
+| changeShopIDParam |
+| no                |
+Then I am logged into the OMNIA terminal
+When I navigate to the customer alias page from Customer List in Dashboard
+And I click on ""Action List"" tab under customer list
+Then I verify the display of interaction record on action list page
+| alias |
+| no    |"
+C65819108,"1. Login to Omnia.
+2. Click on 'Customer list' from Dashboard in 'Admin' section.
+3. Verify the tabs under customers page.
+4. Scroll down the action list tab","Scenario: Verify the Action list count on the header of the tab and respective Column headers its sort filters and pagination
+Given I am logged into the OMNIA terminal
+When I navigate to the customer alias page from Customer List in Dashboard
+Then I verify display of Action list count on the header of the tab
+When I click on ""Action List"" tab under customer list
+Then I verify count of records wrt header count of action list
+And I verify Sort filter is applied ""false"" on column ""THRESHOLD LIMIT REACHED""
+And I verify Sort filter is applied ""false"" on column ""CUSTOMER STATUS""
+Then I verify Sort filter is applied ""false"" on column ""BLOCKED DATE""
+And I verify Sort filter is applied ""false"" on column ""ALIAS""
+Then I verify Sort filter is applied ""false"" on column "" EXCEPTION DATE""
+And I verify Sort filter is applied ""false"" on column ""LAST BET""
+Then I verify Sort filter is applied ""false"" on column ""ACTION REQUIRED""
+And I verify display of pagination Filter on page ""false""
+
+#This case need to be tested on ROI Shop,Hence NA for stage2/4"
+C65819162,"1. Login to Omnia.
+2. Click on 'Customer list' from Dashboard in 'Admin' section.
+3. Verify the tabs under customers page.
+4. Click on Action list tab.","Scenario: Verify the Action list count on the header of the tab and respective Column headers its sort filters and pagination
+Given I am logged into the OMNIA terminal
+When I navigate to the customer alias page from Customer List in Dashboard
+Then I verify display of Action list count on the header of the tab
+When I click on ""Action List"" tab under customer list
+Then I verify count of records wrt header count of action list
+And I verify Sort filter is applied ""false"" on column ""THRESHOLD LIMIT REACHED""
+And I verify Sort filter is applied ""false"" on column ""CUSTOMER STATUS""
+Then I verify Sort filter is applied ""false"" on column ""BLOCKED DATE""
+And I verify Sort filter is applied ""false"" on column ""ALIAS""
+Then I verify Sort filter is applied ""false"" on column "" EXCEPTION DATE""
+And I verify Sort filter is applied ""false"" on column ""LAST BET""
+Then I verify Sort filter is applied ""false"" on column ""ACTION REQUIRED""
+And I verify display of pagination Filter on page ""false""
+
+#This case need to be tested on ROI Shop,Hence NA for stage2/4"
+C65819014,"1. Login to Omnia.
+2. Click on 'Customer list' tab from Dashboard in 'Admin' section. 
+3. Click on 'Action List' tab from customers tab.
+4. Verify 'Last Bet' column header is seen in the Action List.","Scenario: Verify the Action list count on the header of the tab and respective Column headers its sort filters and pagination
+Given I am logged into the OMNIA terminal
+When I navigate to the customer alias page from Customer List in Dashboard
+Then I verify display of Action list count on the header of the tab
+When I click on ""Action List"" tab under customer list
+Then I verify count of records wrt header count of action list
+And I verify Sort filter is applied ""false"" on column ""THRESHOLD LIMIT REACHED""
+And I verify Sort filter is applied ""false"" on column ""CUSTOMER STATUS""
+Then I verify Sort filter is applied ""false"" on column ""BLOCKED DATE""
+And I verify Sort filter is applied ""false"" on column ""ALIAS""
+Then I verify Sort filter is applied ""false"" on column "" EXCEPTION DATE""
+And I verify Sort filter is applied ""false"" on column ""LAST BET""
+Then I verify Sort filter is applied ""false"" on column ""ACTION REQUIRED""
+And I verify display of pagination Filter on page ""false""
+
+#This case need to be tested on ROI Shop,Hence NA for stage2/4"
+C65763590,"1. Login to Omnia, Navigate to Dashboard and select 'Gift Voucher Sale'
+2. Purchase gift vouchers with 'Payment Type' as 'Cash'
+
+3. Navigate to 'DASHBOARD - SHOP FINANCES - SHOP LOG' screen
+4. Verify the record for Gift Voucher Sale is displayed
+5. Verify the 'TYPE' for the record","Scenario: Verifying the 'TYPE' description in 'SHOP FINACES - SHOP LOG' screen when Gift Voucher sale is done with 'CASH' as Payment Type
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+And I generate GIFT VOUCHER SALE by using API
+| paymentType | voucherValue |
+| CASH        | 100          |
+And I navigate to the Shop Log Page
+Then I verify the shoplog transaction row details
+| transactionType   | transferAmount | from | to   | paymentMethod |
+| Gift Voucher Sale | 1.00           | -    | Till | Cash          |"
+C65765427,"1. Login to Omnia, Navigate to Dashboard and select 'Gift Voucher Sale'
+2. Purchase gift vouchers with 'Payment Type' as 'Debit'
+3. Navigate to 'DASHBOARD - SHOP FINANCES - SHOP LOG' screen
+4. Verify the two records for Gift Voucher Sale is displayed
+5. Verify the 'TYPE' for the records displayed","Scenario: Verifying the 'TYPE' description in 'SHOP FINACES - SHOP LOG' screen when Gift Voucher sale is done with 'DEBIT' as Payment Type
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+And I generate GIFT VOUCHER SALE by using API
+| paymentType | voucherValue |
+| DEBIT       | 100          |
+And I navigate to the Shop Log Page
+Then I verify the shoplog transaction row details
+| transactionType    | transferAmount | from | to       | paymentMethod |
+| Debit Card Payment | 1.00           | -    | EXTERNAL | Debit         |
+| Gift Voucher Sale  | 1.00           | -    | Till     | Debit         |"
+C65784203,"1. Login to Omnia as 'Operator', navigate to SHOP FINANCES - SHOP LOG' screen
+2. Verify the delete icon is not available at 'Gift Voucher Sale' record from precondition 1 gift voucher
+3. Repeat Step 1 but now login as 'DUTY MANAGER' and Step 2
+4. Repeat the above steps for Precondition 2 gift voucher
+5. Repeat the above steps for the existing Gift Vouchers that have been purchased before the deployment of the ticket 22701, by applying advanced filter.","Scenario Outline: Verifying the validations in 'Gift Voucher' creation screen
+Given I am logged into the OMNIA terminal as a ""OPERATOR""
+When I navigate to the dashboard page
+Then I select Gift Voucher Sale from Dashboard
+And I verify the currency based on env
+When I enter the denomination Value
+| denominationField | value |
+| five              | 9     |
+| ten               | 1     |
+And I verify Total Voucher Value
+| voucherValue |
+| 55.00        |
+And I verify warning message
+| flag |
+| true |
+Then I verify Create Gift Voucher button and its status
+| status   |
+| disabled |
+When I enter the denomination Value
+| denominationField | value |
+| five              | 3     |
+| ten               | 1     |
+And I verify warning message
+| flag  |
+| false |
+And I select the payment Type dropdown
+| paymentType   |
+| <paymentType> |
+Then I verify Create Gift Voucher button and its status
+| status  |
+| enabled |
+And I click on Create Gift Voucher sale button
+And I click on Done Button after payment when click flag is ""<clickFlag>""
+And I click on Finish Button
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     |DELETE_ICON    | PAYMENT_MODE  |USER_TYPE|
+| Gift Voucher Sale |<deleteButton> | <paymentType> |OPERATOR |
+And I Logout from the Omnia terminal
+When I am logged into the OMNIA terminal as a ""AREA-MANAGER""
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    | PAYMENT_MODE  |USER_TYPE   |
+| Gift Voucher Sale | <deleteButton> | <paymentType> |AREA-MANAGER|
+And I Logout from the Omnia terminal
+When I am logged into the OMNIA terminal as a ""SHOP-MANAGER""
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    |PAYMENT_MODE  |USER_TYPE   |
+| Gift Voucher Sale | <deleteButton> |<paymentType> |SHOP-MANAGER|
+When I apply shoplog filter by following combination
+| FROM_DATE | TO_DATE | PAYMENT_METHOD |
+| N/A       | N/A     | Cash           |
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    |
+| Gift Voucher Sale | <deleteButton> |
+
+
+Examples:
+| paymentType | clickFlag | deleteButton |
+| Cash        | no        | yes          |
+| Debit       | yes       | yes          |"
+C65784908,"1. Login to Omnia as 'Shop Manager', navigate to SHOP FINANCES - SHOP LOG' screen
+2. Verify the delete icon is available at 'Gift Voucher Sale' record from precondition 1 gift voucher Placed with Cash 
+3. Repeat Step 1 but now login as 'AREA MANAGER' and Step 2 for Cash created GV
+4. Repeat the above steps for Precondition 2 gift voucher created via DEbit 
+5. Repeat the above steps for the existing Gift Vouchers that have been purchased before the deployment of the ticket 22701, by applying advanced filter.","Scenario Outline: Verifying the validations in 'Gift Voucher' creation screen
+Given I am logged into the OMNIA terminal as a ""OPERATOR""
+When I navigate to the dashboard page
+Then I select Gift Voucher Sale from Dashboard
+And I verify the currency based on env
+When I enter the denomination Value
+| denominationField | value |
+| five              | 9     |
+| ten               | 1     |
+And I verify Total Voucher Value
+| voucherValue |
+| 55.00        |
+And I verify warning message
+| flag |
+| true |
+Then I verify Create Gift Voucher button and its status
+| status   |
+| disabled |
+When I enter the denomination Value
+| denominationField | value |
+| five              | 3     |
+| ten               | 1     |
+And I verify warning message
+| flag  |
+| false |
+And I select the payment Type dropdown
+| paymentType   |
+| <paymentType> |
+Then I verify Create Gift Voucher button and its status
+| status  |
+| enabled |
+And I click on Create Gift Voucher sale button
+And I click on Done Button after payment when click flag is ""<clickFlag>""
+And I click on Finish Button
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     |DELETE_ICON    | PAYMENT_MODE  |USER_TYPE|
+| Gift Voucher Sale |<deleteButton> | <paymentType> |OPERATOR |
+And I Logout from the Omnia terminal
+When I am logged into the OMNIA terminal as a ""AREA-MANAGER""
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    | PAYMENT_MODE  |USER_TYPE   |
+| Gift Voucher Sale | <deleteButton> | <paymentType> |AREA-MANAGER|
+And I Logout from the Omnia terminal
+When I am logged into the OMNIA terminal as a ""SHOP-MANAGER""
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    |PAYMENT_MODE  |USER_TYPE   |
+| Gift Voucher Sale | <deleteButton> |<paymentType> |SHOP-MANAGER|
+When I apply shoplog filter by following combination
+| FROM_DATE | TO_DATE | PAYMENT_METHOD |
+| N/A       | N/A     | Cash           |
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    |
+| Gift Voucher Sale | <deleteButton> |
+
+
+Examples:
+| paymentType | clickFlag | deleteButton |
+| Cash        | no        | yes          |
+| Debit       | yes       | yes          |"
+C65763056,"1. Navigate to Dashboard and select 'Gift Voucher Sale'
+2. Verify the default denominations available under 'VOUCHER VALUE' header in the screen
+3. Verify the text box are added next to the default denominations under 'No. of Vouchers' header in the screen
+4. Verify the increment and decrement arrows are available within the text box
+5. Verify the 'TOTAL VOUCHER VALUE = ' label is added to the screen
+6. Verify the 'PAYMENT TYPE' dropdown is available in the screen
+7. Verify the 'CREATE GIFT VOUCHER' button remains disabled
+8. Verify the 'CANCEL' button is available","Scenario:Verifying the changes to the 'Gift Voucher' creation screen
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+And I select Gift Voucher Sale from Dashboard
+Then I verify the currency based on env
+And I verify Create Gift Voucher button and its status
+| status   |
+| disabled |
+Then I verify values of Payment Type dropdown on gift voucher screen
+And I verify default Total voucher value ""0.00""
+#Need to take clarity on default values either 0.00 or empty
+And I verify  default values of denominations voucher screen
+| denominationValue |
+| five              |
+| ten               |
+| fifteen           |
+| twenty            |
+And I Verify behavior of ""five"" voucher text box
+When I click on cancel button
+Then I can verify the headers of the dashboard page"
+C65763057,"1. Navigate to the Omnia Dashboard and click on 'Gift Voucher Sale'
+2. Enter the Denomination 'Voucher value' such that it exceeds 50.00  
+3. Adjust the Denomination 'Voucher value' such that value is less or equal to 50.00
+4. Click on 'PAYMENT TYPE' dropdown and select type as 'Cash'
+5. Repeat the above steps 1-3 
+6. Repeat Step 4 by selecting type as 'Debit'","Scenario Outline: Verifying the validations in 'Gift Voucher' creation screen
+Given I am logged into the OMNIA terminal as a ""OPERATOR""
+When I navigate to the dashboard page
+Then I select Gift Voucher Sale from Dashboard
+And I verify the currency based on env
+When I enter the denomination Value
+| denominationField | value |
+| five              | 9     |
+| ten               | 1     |
+And I verify Total Voucher Value
+| voucherValue |
+| 55.00        |
+And I verify warning message
+| flag |
+| true |
+Then I verify Create Gift Voucher button and its status
+| status   |
+| disabled |
+When I enter the denomination Value
+| denominationField | value |
+| five              | 3     |
+| ten               | 1     |
+And I verify warning message
+| flag  |
+| false |
+And I select the payment Type dropdown
+| paymentType   |
+| <paymentType> |
+Then I verify Create Gift Voucher button and its status
+| status  |
+| enabled |
+And I click on Create Gift Voucher sale button
+And I click on Done Button after payment when click flag is ""<clickFlag>""
+And I click on Finish Button
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     |DELETE_ICON    | PAYMENT_MODE  |USER_TYPE|
+| Gift Voucher Sale |<deleteButton> | <paymentType> |OPERATOR |
+And I Logout from the Omnia terminal
+When I am logged into the OMNIA terminal as a ""AREA-MANAGER""
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    | PAYMENT_MODE  |USER_TYPE   |
+| Gift Voucher Sale | <deleteButton> | <paymentType> |AREA-MANAGER|
+And I Logout from the Omnia terminal
+When I am logged into the OMNIA terminal as a ""SHOP-MANAGER""
+And I navigate to the Shop Log Page
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    |PAYMENT_MODE  |USER_TYPE   |
+| Gift Voucher Sale | <deleteButton> |<paymentType> |SHOP-MANAGER|
+When I apply shoplog filter by following combination
+| FROM_DATE | TO_DATE | PAYMENT_METHOD |
+| N/A       | N/A     | Cash           |
+Then I verify following type of records will be displayed
+| TRANSFER_TYPE     | DELETE_ICON    |
+| Gift Voucher Sale | <deleteButton> |
+
+
+Examples:
+| paymentType | clickFlag | deleteButton |
+| Cash        | no        | yes          |
+| Debit       | yes       | yes          |"
+C65783106,"1. Login to Swagger
+2. Look out for /api/customers/bi/activities/{page}/{pageSize} providing the required details and hit the send button
+3. Verify the Alias ID and Terminal ID details should both match in the response generated","Scenario: Verified the Swagger call for the API /api/customers/bi/activities/{page}/{pageSize} and validated the terminal ID matching with the Alias ID
+Given I am logged into the OMNIA terminal
+Then I hit the BI customer activities service and verify the terminal details"
+C65843007,"1. Login to omnia
+2. Note down the slip count available on dashboard. Now struck a bet and check if count increased
+3. Also check the same is happening in side panel
+4. Check slip count when slip translation is in progress
+5. Check slip count when slip is translated","Scenario: Translation now and slip verification
+Given I am logged into the OMNIA terminal
+When Dashboard translation buttons open translation list
+Then Bet slip number increases if slip is accepted
+And I verify Bet slip count varies with respect to bet slip transitions"
+C66008452,"1. Login to omnia
+2. Click on debit card tab from the quick access
+3. verify the FOBT should change to Gaming Machines","Scenario: Verify the FOBT is renamed as 'Gaming Machines' in Debit from Transaction Type in Dashboard
+Given I am logged into the OMNIA terminal
+When I navigate to the dashboard page
+And I navigate to the Debit Card Page
+Then I verify ""Debit"" dropdown suggestion should not contains FOBT"
+C66010728,"1. Open Omnia, open network tab and enter user email and password.
+Click on Login","Scenario: To verify typeDisplayNames api is triggered only at the time of login Omnia.
+Given I open omnia app login page
+Then I verify typeDisplay API call is triggered"
+C66010729,"1. Login to Omnia
+2. Open the network tab, navigate to a precondition bet and translate it.","Scenario: To verify typeDisplayNames api is not triggered when previous days struck bet is translated
+Given I am logged into the OMNIA terminal
+When I get the slip Id for the day with following details using API
+|  state   | fromDate |  toDate  | paymentType |
+| STRUCK   |   -1     |    -1    |  CASH       |
+And I grab the bet slip Id
+When Find the grabbed slip 1 from search page
+And I translate a default 'HORSES' with stake 1000
+
+# Stage-5 ROI specific test case"
+C66010730,"1. Login to Omnia
+2. Open the network tab, click on Prices/Results tab from left hand navigation, click on Results tab and filter the date field.","Scenario: Verify the Data is showing for HORSE>LIVE RACING as per the filtration on the result screen
+Given I run Collection
+| collection               | marketTypeID | eventName         |
+| HORSE-TESTEVENT-API.json | 1894         | HORSE-TESTEVENT   |
+| HORSE-TESTEVENT-API.json | 1894         | HORSE-SAMPLEEVENT |
+When I am logged into the OMNIA terminal
+When I navigate to the Pricing Page
+And I click on the results tab in prices screen
+Then I verify the 'results' tab is 'in focus'
+And I verify the 'live racing' sub tab is 'in focus'
+Then I select the event ""HORSE-TESTEVENT"" from Location
+And I verify Location ""HORSE-TESTEVENT"" in Location Results after filtering
+Then I select the event ""HORSE-SAMPLEEVENT"" from Location
+And I verify Location ""HORSE-SAMPLEEVENT"" in Location Results after filtering
+Then I set Date to previous Date"
+C66010740,"1. Login to Omnia
+2. Place a bet, open network tab and translate the bet on Horse & Greyhounds 
+3. Place another bet, open network tab and translate the bet on virtual racing.","Scenario: Translate a win bet (Virtual Dogs)
+Given I am logged into the OMNIA terminal
+When I navigate to the Pricing Page
+And I grab next upcoming races info of ""Virtual Dogs""
+| grabEventNos |
+| 1            |
+And I have navigated to the translation page
+And I accept a connect card bet
+| betType   | stake |
+| Cash (F1) | 1.00  |
+When Find the grabbed slip 1 from search page
+And I entered stake '1.00' and proceed to selection page
+Then I change Sport to 'Virtual Racing' via F8
+Then I select and verify grabbed event details for translation
+| selectEvent |
+| BY-TIME     |
+And I select selection using keyboard shortcut
+And I press the Enter key
+And I press the Enter key
+And I proceed bet for Default
+| setStake | betCriteria |
+| Default  | Win         |
+And I can finish translation
+When Find the grabbed slip 1 from search page
+Then I verify translated slip details
+| stake | mode_of_payment |
+| 1.00  | Cash            |
+Then I verify section with details
+| section | noOfSelection | betCriteria | betType | unitCost |
+| 1       | 1             | Win         | Single  | 1.00     |"
+C66075791,"1. Login to the omnia application.
+2. Navigate to the Cashiers page.
+3. Try to update any event(available in the cashiers page) in OB.
+4. Navigate back to the dashboard and select Settlers page. 
+5. Try to settle an event in OB.","Scenario: Check the feed for settlers and cashiers page is getting updated automaticall
+Given I am logged into the OMNIA terminal
+When I create a 'HORSES & GREYHOUNDS' event named as 'CashierEvent' with following details
+|eventTime| marketName      | selectionNames        |updateRunnerNumber |marketPriceLive |spValue      |
+|    2    | Win or Each Way | Artax,Blaze,Bucephalus|  YES              |1/2,4/3,5/2     |1/2,1/2,1/2  |
+And I grab new event Id SelectionId and EventName
+When I create a 'HORSES & GREYHOUNDS' event named as 'SettlerEvent' with following details
+| eventTime | marketName      | selectionNames         | updateRunnerNumber | marketPriceLive | spValue     |
+| 2         | Win or Each Way | Artax,Blaze,Bucephalus | YES                | 1/2,4/3,5/2     | 1/2,1/2,1/2 |
+When I should be able to see the Cashiers Page
+And I clicked on Cashiers Page
+Then I verify number of Events available in Cashiers page
+Then I verify first six events are displayed as per event creation time
+| eventIndex |
+| 1          |
+Then I verify the updated feed in the cashier page
+| spValue     | eventIndex |
+| 1/2,1/2,1/2 |    1       |
+And I set SP for the Selection
+| eventSequenceNo | marketName      | selectionNames         | spValue     | LP  |
+| 1               | Win or Each Way | Artax,Blaze,Bucephalus | 1/5,1/5,1/5 | Yes |
+And I wait for ""10"" seconds
+Then I verify the updated feed in the cashier page
+| spValue     | eventIndex |
+| 1/5,1/5,1/5 |    1       |
+When I click the close button
+And I set result and settle the 'Event'
+| eventSequenceNo |
+| 1               |
+And I set result and settle the 'Event'
+| eventSequenceNo |
+| 2               |
+And I wait for ""10"" seconds
+And I clicked on Settlers Page
+Then I verify number of Events Available
+And I verify Event should ""Exist""
+| event        | getEventName  |
+| CashierEvent |  CashierEvent |
+And I grab new event Id SelectionId and EventName
+And I verify Event should ""Exist""
+| event         | getEventName   |
+| SettlersEvent |  SettlersEvent |"
