@@ -261,9 +261,11 @@ class MatchingPipeline:
             # If ANY of the top-K matches is >= threshold, mark as REUSED_TEMPLATE
             if should_skip:
                 # When skipping reranker, use vector similarity threshold
-                # Convert vector similarity (0-1) to approximate reranker scale
-                # Good vector similarity (>0.7) ≈ acceptable reranker score (>-1.0)
-                vector_threshold = 0.7  # Approximate threshold for vector similarity
+                # Since reranker can accept scores as low as -2.0, we need a more lenient
+                # vector threshold. Vector similarity of 0.65+ typically corresponds to
+                # reranker scores > -1.0, which are acceptable matches.
+                # Using 0.65 as threshold (more lenient than 0.7) to match reranker behavior
+                vector_threshold = 0.65  # Lenient threshold to match reranker acceptance
                 has_good_match = any(
                     cand.get('vector_similarity', 0) >= vector_threshold
                     for cand in top_k_candidates
