@@ -11,15 +11,15 @@ reranker_enabled: true
 reranker_top_k: 100  # Rerank top 100 candidates for comprehensive 1-to-many matching
 
 # Top-K Results Configuration
-top_k_results: 6  # Number of top matches to return per query (1-to-many relationship)
+top_k_results: 5  # Number of top matches to return per query (1-to-many relationship)
 
 # Minimum Score Threshold (for REUSED vs NEW_BDD_REQUIRED decision)
 # Note: Cross-encoder rerankers can output negative scores. 
 # Typical good matches: > 0.0, acceptable matches: > -1.0, poor matches: < -2.0
 min_score_threshold: -2.0  # Lowered from -1.0 to catch more borderline matches
 
-# Retrieval Limits (Increased for better recall - 1-to-many matching)
-prefilter_limit: 300  # Retrieve 300 candidates from vector search
+# Retrieval Limits (Optimized for dynamic reranking)
+prefilter_limit: 100  # Retrieve 100 candidates from vector search (reduced for efficiency)
 relaxed_limit: 500
 
 # Vector Search Parameters (Increased proportionally)
@@ -53,6 +53,27 @@ database:
   database: "teststep_rag_bgem3"  # New database for this feature branch
   user: "postgres"
   password: "123456"
+
+# Dynamic Reranking Configuration (Percentile-Based)
+# Intelligently skips reranker when vector search scores show clear confidence
+dynamic_reranking:
+  enabled: true
+  target_top_k: 5  # Return top 5 results
+  
+  # Percentile-based skip conditions (ANY can trigger skip)
+  skip_conditions:
+    # Condition 1: All top 5 above Xth percentile of all retrieved scores
+    min_percentile_rank: 90  # Top 5 must be above 90th percentile
+    
+    # Condition 2: Percentile gap between 5th and 6th candidate
+    percentile_gap_threshold: 10  # 5th must be >10 percentile points above 6th
+    
+    # Condition 3: Cluster separation (mean of top 5 vs rest)
+    cluster_separation: 0.10  # Mean of top 5 must be >0.10 above rest mean
+    
+    # Condition 4: Top dominance (top score very high, top 5 all high)
+    top_percentile_threshold: 95  # Top score must be above 95th percentile
+    top_k_min_percentile: 85  # All top 5 must be above 85th percentile (when top is high)
 
 # Fine-Tuning (Optional)
 fine_tuning:

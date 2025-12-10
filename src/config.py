@@ -66,6 +66,18 @@ class DatabaseConfig:
 
 
 @dataclass
+class DynamicRerankingConfig:
+    """Dynamic reranking configuration (percentile-based)."""
+    enabled: bool
+    target_top_k: int
+    min_percentile_rank: float
+    percentile_gap_threshold: float
+    cluster_separation: float
+    top_percentile_threshold: float
+    top_k_min_percentile: float
+
+
+@dataclass
 class Config:
     """Main configuration class."""
     embedding: EmbeddingConfig
@@ -80,6 +92,7 @@ class Config:
     fine_tuning: Dict[str, Any]
     top_k_results: int
     min_score_threshold: float
+    dynamic_reranking: DynamicRerankingConfig
 
 
 def load_config(config_path: str = "config.yaml") -> Config:
@@ -135,7 +148,16 @@ def load_config(config_path: str = "config.yaml") -> Config:
         normalization_version=config_dict['normalization_version'],
         fine_tuning=config_dict['fine_tuning'],
         top_k_results=config_dict.get('top_k_results', 5),
-        min_score_threshold=config_dict.get('min_score_threshold', 0.0)
+        min_score_threshold=config_dict.get('min_score_threshold', 0.0),
+        dynamic_reranking=DynamicRerankingConfig(
+            enabled=config_dict.get('dynamic_reranking', {}).get('enabled', False),
+            target_top_k=config_dict.get('dynamic_reranking', {}).get('target_top_k', 5),
+            min_percentile_rank=config_dict.get('dynamic_reranking', {}).get('skip_conditions', {}).get('min_percentile_rank', 90),
+            percentile_gap_threshold=config_dict.get('dynamic_reranking', {}).get('skip_conditions', {}).get('percentile_gap_threshold', 10),
+            cluster_separation=config_dict.get('dynamic_reranking', {}).get('skip_conditions', {}).get('cluster_separation', 0.10),
+            top_percentile_threshold=config_dict.get('dynamic_reranking', {}).get('skip_conditions', {}).get('top_percentile_threshold', 95),
+            top_k_min_percentile=config_dict.get('dynamic_reranking', {}).get('skip_conditions', {}).get('top_k_min_percentile', 85)
+        )
     )
 
 
