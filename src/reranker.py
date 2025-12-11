@@ -2,15 +2,16 @@
 import numpy as np
 from typing import List, Tuple, Dict, Any, Optional, Union
 from sentence_transformers import CrossEncoder
-from src.normalizer import NormalizedResult
+from src.normalizer import NormalizedResult, Normalizer
 
 
 class Reranker:
     """Reranks candidates using cross-encoder models."""
     
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, normalizer: Optional[Normalizer] = None):
         self.model_name = model_name
         self.model = CrossEncoder(model_name)
+        self.normalizer = normalizer
     
     def rerank(self, query: Union[str, NormalizedResult], candidates: List[Dict[str, Any]], top_k: Optional[int] = None) -> List[Tuple[Dict[str, Any], float]]:
         """
@@ -73,11 +74,37 @@ class Reranker:
     def _format_candidate_text(self, candidate: Dict[str, Any]) -> str:
         """Format candidate text with available metadata."""
         parts = []
+        
         # Attempt to pull any structured fields if present
         action_canon = candidate.get("action_canonical")
         domain_terms = candidate.get("domain_terms") or candidate.get("domain_tokens")
         count_phrases = candidate.get("count_phrases")
+        
+        # If structured fields are missing and we have a normalizer, re-normalize on-the-fly
+        if self.normalizer and (not action_canon or not domain_terms or not count_phrases):
+            # Get original text (prefer step_text over normalized)
+            original_text = (
+                candidate.get('step_text') or  # Original individual step text
+                candidate.get('bdd_step') or  # Full scenario text
+                candidate.get('step_text_normalized') or  # Fallback to normalized
+                candidate.get('normalized_text') or
+                candidate.get('canonical_template') or
+                ''
+            )
+            
+            if original_text:
+                # Re-normalize to extract structured fields
+                normalized_result = self.normalizer.normalize(original_text)
+                
+                # Use extracted fields if they weren't already present
+                if not action_canon and normalized_result.action_canonical:
+                    action_canon = normalized_result.action_canonical
+                if not domain_terms and normalized_result.domain_terms:
+                    domain_terms = normalized_result.domain_terms
+                if not count_phrases and normalized_result.count_phrases:
+                    count_phrases = normalized_result.count_phrases
 
+        # Format structured cues
         if action_canon:
             parts.append(f"Action: {action_canon}")
         if domain_terms:

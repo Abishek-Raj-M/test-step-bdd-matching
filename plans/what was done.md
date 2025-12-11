@@ -28,6 +28,7 @@ This document summarizes all the improvements and changes made to the RAG-based 
 - **Canonicalizes action verbs** (e.g., "click" → "press", "type" → "enter")
 - **Preserves count phrases** (e.g., "4 times") instead of replacing with generic `<NUMBER>`
 - Extracts structured metadata: `action_canonical`, `domain_terms`, `count_phrases`
+- **On-the-fly extraction for candidates**: Reranker now re-normalizes candidates to extract structured fields, ensuring symmetric structured cues for both query and candidate
 
 ### Why:
 - Addresses critical issue where high vector similarity (0.7+) was rejected by reranker due to normalization gaps
@@ -120,24 +121,24 @@ This document summarizes all the improvements and changes made to the RAG-based 
 ## Overall Improvements Summary
 
 ### Performance
-- ✅ **97.5% match rate** (up from previous issues)
-- ✅ **100% reranker skip rate** (significant time savings)
-- ✅ **Faster processing** (no reranker calls when confident)
+- **97.5% match rate** (up from previous issues)
+- **100% reranker skip rate** (significant time savings)
+- **Faster processing** (no reranker calls when confident)
 
 ### Quality
-- ✅ **Better normalization** preserves domain terms
-- ✅ **Action verb canonicalization** improves matching
-- ✅ **Percentile-based approach** adapts to different score distributions
+- **Better normalization** preserves domain terms
+- **Action verb canonicalization** improves matching
+- **Percentile-based approach** adapts to different score distributions
 
 ### Architecture
-- ✅ **Clean separation**: new database for new implementation
-- ✅ **Dynamic reranking**: intelligent skip conditions
-- ✅ **Well-calibrated thresholds**: 0.65 for vector, -2.0 for reranker
+- **Clean separation**: new database for new implementation
+- **Dynamic reranking**: intelligent skip conditions
+- **Well-calibrated thresholds**: 0.65 for vector, -2.0 for reranker
 
 ### Scalability
-- ✅ **Validated on full dataset** (97 test cases, 1,130 steps)
-- ✅ **Consistent results** across sample and full dataset
-- ✅ **Production-ready** configuration
+- **Validated on full dataset** (97 test cases, 1,130 steps)
+- **Consistent results** across sample and full dataset
+- **Production-ready** configuration
 
 ---
 
@@ -154,10 +155,10 @@ This document summarizes all the improvements and changes made to the RAG-based 
 ## Current Status
 
 **Production Ready:**
-- ✅ All improvements validated
-- ✅ Full dataset tested
-- ✅ Performance metrics excellent
-- ✅ No further changes needed
+- All improvements validated
+- Full dataset tested
+- Performance metrics excellent
+- No further changes needed
 
 The system is ready for production use with the new BGE-m3 models, improved normalization, and intelligent dynamic reranking.
 

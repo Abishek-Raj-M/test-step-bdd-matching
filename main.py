@@ -28,7 +28,7 @@ def setup_pipeline(config):
     chunker = Chunker()
     embedder = Embedder(config.embedding.model_name, cache_dir=config.embedding.cache_dir)
     retrieval = Retrieval(db, config)
-    reranker = Reranker(config.reranker.model_name)
+    reranker = Reranker(config.reranker.model_name, normalizer)
     placeholder_mapper = PlaceholderMapper()
     fallback_chain = FallbackChain(db, retrieval, reranker, normalizer, embedder, config)
     

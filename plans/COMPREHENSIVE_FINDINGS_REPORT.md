@@ -310,6 +310,21 @@ We chose dynamic reranking because:
 
 ### 5.3 Scenario Grouping Analysis
 
+#### Understanding Scenario Grouping
+
+**What is a Scenario?**
+A BDD scenario is a complete test case made up of multiple steps that work together. For example:
+
+```
+Scenario: OTC- Ante Post Option
+  Given I am on the betting page
+  When I select sport number
+  And I press F8 4 times
+  Then the numbers table appears
+```
+
+This scenario has 4 steps (1 Given, 2 When, 1 Then) that form a complete workflow. When a test step like "Press F8 4 times" is matched, it might match multiple steps from the same scenario, indicating they belong together.
+
 #### Current State: Scenario Grouping is Already Present ✅
 
 **What We Have:**
@@ -332,48 +347,104 @@ We chose dynamic reranking because:
    - Each match includes full scenario context
    - Multiple matches can come from same or different scenarios
 
+**Example Current Output:**
+```json
+{
+  "top_k_candidates": [
+    {
+      "step_text": "I press F8 4 times",
+      "scenario_id": 724,
+      "scenario_name": "OTC- Ante Post Option",
+      "scenario_given_steps": "I am on the betting page",
+      "scenario_when_steps": "I select sport number, I press F8 4 times",
+      "scenario_then_steps": "the numbers table appears"
+    },
+    {
+      "step_text": "I select sport number",
+      "scenario_id": 724,  // ← Same scenario!
+      "scenario_name": "OTC- Ante Post Option",
+      ...
+    },
+    {
+      "step_text": "I change stake",
+      "scenario_id": 723,  // ← Different scenario
+      "scenario_name": "OTC- Change Stake Via Pencil",
+      ...
+    }
+  ]
+}
+```
+
 #### What's Missing: Explicit Grouping
 
 **Current Limitation:**
-- Candidates are returned as a flat list
-- AI needs to group by `scenario_id` manually
+- Candidates are returned as a **flat list** (array of matches)
+- AI needs to **manually group** by `scenario_id` to understand relationships
 - No explicit indication of which candidates belong together
+- AI must iterate through the list and check `scenario_id` values to group them
+
+**Why This Matters:**
+When multiple matches come from the same scenario (like matches 1 and 2 above both have `scenario_id: 724`), the AI should recognize:
+- These steps belong together
+- They form a complete workflow
+- It might need to use the full scenario, not just one step
+
+Without explicit grouping, the AI might:
+- Miss that steps belong together
+- Use only one step instead of the full scenario
+- Make less informed decisions about which matches to use
 
 **What Could Be Improved:**
 
 1. **Explicit Scenario Grouping:**
+   Instead of just a flat list, add a structured grouping:
    ```json
    {
-     "top_k_candidates": [...],
-     "scenario_groups": {
+     "top_k_candidates": [...],  // Still keep the flat list for backward compatibility
+     
+     "scenario_groups": {  // ← NEW: Explicit grouping
        "724": {
          "scenario_name": "OTC- Ante Post Option",
-         "matches": [candidate1, candidate2],
-         "completeness": "partial"  // or "complete"
+         "matches": [
+           { "step_text": "I press F8 4 times", ... },
+           { "step_text": "I select sport number", ... }
+         ],
+         "completeness": "partial"  // Only 2 of 4 steps matched
        },
        "723": {
          "scenario_name": "OTC- Change Stake Via Pencil",
-         "matches": [candidate3],
-         "completeness": "partial"
+         "matches": [
+           { "step_text": "I change stake", ... }
+         ],
+         "completeness": "partial"  // Only 1 of 3 steps matched
        }
      }
    }
    ```
 
 2. **Scenario Completeness Indicator:**
-   - Mark if all steps from a scenario are matched
-   - Indicate partial vs complete scenario matches
-   - Help AI understand match coverage
+   - **Complete:** All steps from the scenario are matched
+     - Example: Scenario has 4 steps, and all 4 are in the matches
+   - **Partial:** Only some steps are matched
+     - Example: Scenario has 4 steps, but only 2 are in the matches
+   - Helps AI understand match coverage and make better decisions
 
 3. **Relationship Metadata:**
    - Add `match_type`: "single_step" | "partial_scenario" | "complete_scenario"
    - Add `related_steps` to show other steps in same scenario
-   - Add `scenario_coverage` percentage
+   - Add `scenario_coverage` percentage (e.g., "2 of 4 steps matched = 50%")
+
+**Benefits of Explicit Grouping:**
+1. **Easier for AI:** No need to manually group by `scenario_id`
+2. **Better Decisions:** AI can see if a full scenario matches vs. just one step
+3. **Completeness Awareness:** AI knows if all steps are matched or just partial
+4. **More Reliable:** Explicit structure reduces chance of errors in grouping logic
 
 **Recommendation:**
-- **Current structure is sufficient** for AI to figure out relationships
-- **Explicit grouping would make it easier** and more reliable
+- **Current structure is sufficient** for AI to figure out relationships (it has all the data)
+- **Explicit grouping would make it easier** and more reliable (less logic needed)
 - **Consider adding** scenario grouping in future iterations for better downstream processing
+- **Priority:** Medium - nice to have, but not critical since current structure works
 
 ---
 
@@ -523,4 +594,6 @@ The system has achieved:
 **Dataset:** 97 test cases, 1,130 steps  
 **Match Rate:** 97.5%  
 **Status:** Production Ready ✅
+
+
 
