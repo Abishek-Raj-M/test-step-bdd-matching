@@ -187,7 +187,7 @@ class MatchingPipeline:
                 # Use reranker
                 candidate_dicts = [c[2] for c in candidates[:self.config.reranker.top_k]]
                 reranked = self.reranker.rerank(normalized, candidate_dicts, 
-                                               top_k=self.config.reranker.top_k)
+                                           top_k=self.config.reranker.top_k)
                 
                 if not reranked:
                     processing_time = (time.time() - start_time) * 1000

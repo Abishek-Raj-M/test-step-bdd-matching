@@ -45,8 +45,14 @@ ENV/
 # Output files
 results/
 metrics/
+output/
 *.csv
 !csv files/*.csv
+
+# Environment and secrets
+.env
+*.env
+config.local.yaml
 
 # Config (if contains secrets)
 # config.yaml
@@ -54,6 +60,11 @@ metrics/
 # OS
 .DS_Store
 Thumbs.db
+
+
+
+
+
 
 
 
