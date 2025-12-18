@@ -23,7 +23,7 @@ embedding_dim: 1024
 # Directory to cache downloaded models and embeddings. This speeds up subsequent
 # runs by avoiding re-downloading models and re-computing embeddings for the
 # same text. Each model version should have its own cache directory.
-embedding_cache_dir: ".embedding_cache_bgem3"
+embedding_cache_dir: ".embedding_cache"
 
 # ----------------------------------------------------------------------------
 # RERANKING CONFIGURATION

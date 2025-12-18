@@ -5,7 +5,7 @@ import csv
 import argparse
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any
 
 sys.path.insert(0, '.')
 from src.config import load_config
@@ -19,6 +19,84 @@ from src.placeholder_mapper import PlaceholderMapper
 from src.fallback import FallbackChain
 from src.pipeline import MatchingPipeline
 from tqdm import tqdm
+
+
+def group_candidates_by_scenario(results_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Group all candidates by scenario_id across all steps in a test case.
+    
+    Args:
+        results_data: List of result dictionaries, each containing top_k_candidates
+        
+    Returns:
+        Dictionary mapping scenario_id to scenario group info with:
+        - scenario_name: Name of the scenario
+        - matches: List of all candidate matches from this scenario
+        - completeness: "complete" if all steps matched, "partial" otherwise
+        - coverage: String like "2 of 4 steps"
+    """
+    scenario_map = {}
+    
+    # Collect all candidates from all steps
+    for result in results_data:
+        for candidate in result.get('top_k_candidates', []):
+            scenario_id = candidate.get('scenario_id')
+            if not scenario_id:
+                continue
+            
+            scenario_id_str = str(scenario_id)
+            
+            if scenario_id_str not in scenario_map:
+                scenario_map[scenario_id_str] = {
+                    'scenario_name': candidate.get('scenario_name', ''),
+                    'scenario_full_text': candidate.get('scenario_full_text', ''),
+                    'scenario_given_steps': candidate.get('scenario_given_steps', ''),
+                    'scenario_when_steps': candidate.get('scenario_when_steps', ''),
+                    'scenario_then_steps': candidate.get('scenario_then_steps', ''),
+                    'matched_step_indices': set(),
+                    'candidates': []
+                }
+            
+            # Track which step_index was matched
+            step_idx = candidate.get('step_index')
+            if step_idx is not None:
+                scenario_map[scenario_id_str]['matched_step_indices'].add(step_idx)
+            
+            scenario_map[scenario_id_str]['candidates'].append(candidate)
+    
+    # Calculate completeness and coverage for each scenario
+    scenario_groups = {}
+    for scenario_id, data in scenario_map.items():
+        # Count total steps in scenario by parsing scenario text
+        # Each non-empty line in given/when/then is typically a step
+        def count_steps_in_text(text: str) -> int:
+            if not text:
+                return 0
+            # Split by newline and count non-empty lines
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
+            return len(lines)
+        
+        given_count = count_steps_in_text(data['scenario_given_steps'])
+        when_count = count_steps_in_text(data['scenario_when_steps'])
+        then_count = count_steps_in_text(data['scenario_then_steps'])
+        total_steps = given_count + when_count + then_count
+        
+        # If we can't determine from text, use max step_index + 1 as fallback
+        if total_steps == 0 and data['matched_step_indices']:
+            total_steps = max(data['matched_step_indices']) + 1
+        
+        matched_count = len(data['matched_step_indices'])
+        is_complete = matched_count == total_steps if total_steps > 0 else False
+        
+        scenario_groups[scenario_id] = {
+            'scenario_name': data['scenario_name'],
+            'scenario_full_text': data['scenario_full_text'],
+            'matches': data['candidates'],
+            'completeness': 'complete' if is_complete else 'partial',
+            'coverage': f"{matched_count} of {total_steps} steps" if total_steps > 0 else f"{matched_count} steps matched"
+        }
+    
+    return scenario_groups
 
 
 def process_single_testcase(testcase_id: str, manual_steps: str, pipeline: MatchingPipeline, 
@@ -87,6 +165,9 @@ def process_single_testcase(testcase_id: str, manual_steps: str, pipeline: Match
     reused_count = sum(1 for r in results if r.final_action == 'REUSED_TEMPLATE')
     new_required_count = sum(1 for r in results if r.final_action == 'NEW_BDD_REQUIRED')
     
+    # Group candidates by scenario across all steps
+    scenario_groups = group_candidates_by_scenario(results_data)
+    
     if verbose:
         print(f"\n{'='*70}")
         print(f"COMPLETE: {testcase_id}")
@@ -94,13 +175,16 @@ def process_single_testcase(testcase_id: str, manual_steps: str, pipeline: Match
         print(f"Total steps: {len(results)}")
         print(f"REUSED_TEMPLATE: {reused_count}")
         print(f"NEW_BDD_REQUIRED: {new_required_count}")
+        if scenario_groups:
+            print(f"Scenarios matched: {len(scenario_groups)}")
     
     return {
         'testcase_id': testcase_id,
         'total_steps': len(results),
         'reused_count': reused_count,
         'new_required_count': new_required_count,
-        'results': results_data
+        'results': results_data,
+        'scenario_groups': scenario_groups  # New: explicit scenario grouping
     }
 
 

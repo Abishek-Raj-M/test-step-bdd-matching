@@ -74,12 +74,11 @@ class IngestionPipeline:
                 # Step 1: Parse and store BDD Step
                 parsed_bdd = self.bdd_parser.parse(bdd_steps)
                 
-                # Get searchable text for embedding
+                # Get searchable text for normalization (no embedding needed for feature_steps)
                 bdd_searchable = self.bdd_parser.get_searchable_text(parsed_bdd)
                 bdd_normalized = self.normalizer.normalize(bdd_searchable)
-                bdd_embedding = self.embedder.embed(bdd_normalized.normalized_text)
                 
-                # Create and insert feature step (BDD)
+                # Create and insert feature step (BDD) - no embedding stored
                 feature_step = FeatureStep(
                     id=None,
                     testcase_id=testcase_id,
@@ -89,7 +88,6 @@ class IngestionPipeline:
                     given_steps=parsed_bdd.given_steps,
                     when_steps=parsed_bdd.when_steps,
                     then_steps=parsed_bdd.then_steps,
-                    embedding=bdd_embedding,
                     usage_count=0
                 )
                 
@@ -122,14 +120,11 @@ class IngestionPipeline:
                         )
                         self.db.insert_individual_bdd_step(individual_step)
                 
-                # Step 2: Chunk manual steps and link to BDD step
+                # Step 2: Chunk manual steps and link to BDD step (no embedding needed for chunks)
                 chunks = self.chunker.chunk(manual_steps, testcase_id, self.normalizer)
                 
                 if chunks:
-                    normalized_texts = [chunk.normalized_chunk for chunk in chunks]
-                    embeddings = self.embedder.embed_batch(normalized_texts, batch_size=self.config.batch_size)
-                    
-                    for chunk, embedding in zip(chunks, embeddings):
+                    for chunk in chunks:
                         chunk_obj = TestStepChunk(
                             chunk_id=chunk.chunk_id,
                             parent_testcase_id=chunk.parent_testcase_id,
@@ -138,7 +133,6 @@ class IngestionPipeline:
                             action_verb=chunk.action_verb,
                             primary_object=chunk.primary_object,
                             placeholders=chunk.placeholders,
-                            embedding=embedding,
                             cluster_id=None,
                             chunk_index=chunk.chunk_index,
                             normalization_version=self.config.normalization_version
@@ -192,7 +186,6 @@ class IngestionPipeline:
                 parsed_bdd = self.bdd_parser.parse(bdd_step)
                 bdd_searchable = self.bdd_parser.get_searchable_text(parsed_bdd)
                 bdd_normalized = self.normalizer.normalize(bdd_searchable)
-                bdd_embedding = self.embedder.embed(bdd_normalized.normalized_text)
                 
                 feature_step = FeatureStep(
                     id=None,
@@ -203,17 +196,14 @@ class IngestionPipeline:
                     given_steps=parsed_bdd.given_steps,
                     when_steps=parsed_bdd.when_steps,
                     then_steps=parsed_bdd.then_steps,
-                    embedding=bdd_embedding,
                     usage_count=0
                 )
                 bdd_step_id = self.db.insert_feature_step(feature_step)
             
-            # Chunk and store manual steps
+            # Chunk and store manual steps (no embedding needed)
             chunks = self.chunker.chunk(step_text, testcase_id, self.normalizer)
-            normalized_texts = [chunk.normalized_chunk for chunk in chunks]
-            embeddings = self.embedder.embed_batch(normalized_texts, batch_size=self.config.batch_size)
             
-            for chunk, embedding in zip(chunks, embeddings):
+            for chunk in chunks:
                 chunk_obj = TestStepChunk(
                     chunk_id=chunk.chunk_id,
                     parent_testcase_id=chunk.parent_testcase_id,
@@ -222,7 +212,6 @@ class IngestionPipeline:
                     action_verb=chunk.action_verb,
                     primary_object=chunk.primary_object,
                     placeholders=chunk.placeholders,
-                    embedding=embedding,
                     cluster_id=None,
                     chunk_index=chunk.chunk_index,
                     normalization_version=self.config.normalization_version

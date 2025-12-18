@@ -185,61 +185,61 @@ class MatchingPipeline:
                 
             else:
                 # Use reranker
-                candidate_dicts = [c[2] for c in candidates[:self.config.reranker.top_k]]
+            candidate_dicts = [c[2] for c in candidates[:self.config.reranker.top_k]]
                 reranked = self.reranker.rerank(normalized, candidate_dicts, 
                                            top_k=self.config.reranker.top_k)
-                
-                if not reranked:
-                    processing_time = (time.time() - start_time) * 1000
-                    return MatchResult(
-                        query_id=query_id,
-                        parent_testcase_id=parent_testcase_id,
-                        chunk_index=chunk_index,
-                        original_chunk=query_text,
-                        full_testcase_text=full_testcase_text,
-                        normalized_text=normalized.normalized_text,
-                        top_k_candidates=[],
-                        selected_candidate_id=None,
-                        selected_template="",
-                        final_action="NEW_BDD_REQUIRED",
-                        reranker_score=None,
-                        vector_similarity=vector_similarity,
-                        processing_time_ms=processing_time,
-                        notes="Reranking returned no results"
-                    )
-                
+            
+            if not reranked:
+                processing_time = (time.time() - start_time) * 1000
+                return MatchResult(
+                    query_id=query_id,
+                    parent_testcase_id=parent_testcase_id,
+                    chunk_index=chunk_index,
+                    original_chunk=query_text,
+                    full_testcase_text=full_testcase_text,
+                    normalized_text=normalized.normalized_text,
+                    top_k_candidates=[],
+                    selected_candidate_id=None,
+                    selected_template="",
+                    final_action="NEW_BDD_REQUIRED",
+                    reranker_score=None,
+                    vector_similarity=vector_similarity,
+                    processing_time_ms=processing_time,
+                    notes="Reranking returned no results"
+                )
+            
                 # Build top-K candidates list from reranked results
-                top_k = min(self.config.top_k_results, len(reranked))
-                top_k_candidates = []
+            top_k = min(self.config.top_k_results, len(reranked))
+            top_k_candidates = []
+            
+            for candidate_dict, reranker_score in reranked[:top_k]:
+                # Get vector similarity for this candidate
+                candidate_id = candidate_dict.get('id')
+                candidate_vector_sim = None
+                for c_id, v_sim, c_dict in candidates:
+                    if c_dict.get('id') == candidate_id:
+                        candidate_vector_sim = v_sim
+                        break
                 
-                for candidate_dict, reranker_score in reranked[:top_k]:
-                    # Get vector similarity for this candidate
-                    candidate_id = candidate_dict.get('id')
-                    candidate_vector_sim = None
-                    for c_id, v_sim, c_dict in candidates:
-                        if c_dict.get('id') == candidate_id:
-                            candidate_vector_sim = v_sim
-                            break
-                    
-                    top_k_candidates.append({
-                        "individual_step_id": candidate_id,
-                        "step_type": candidate_dict.get('step_type'),
-                        "step_text": candidate_dict.get('step_text'),
-                        "step_index": candidate_dict.get('step_index'),
-                        "scenario_id": candidate_dict.get('scenario_id'),
-                        "scenario_name": candidate_dict.get('scenario_name'),
-                        "scenario_full_text": candidate_dict.get('scenario_full_text'),
-                        "scenario_given_steps": candidate_dict.get('scenario_given_steps'),
-                        "scenario_when_steps": candidate_dict.get('scenario_when_steps'),
-                        "scenario_then_steps": candidate_dict.get('scenario_then_steps'),
-                        "reranker_score": float(reranker_score) if reranker_score is not None else None,
-                        "vector_similarity": float(candidate_vector_sim) if candidate_vector_sim is not None else None
-                    })
-                
+                top_k_candidates.append({
+                    "individual_step_id": candidate_id,
+                    "step_type": candidate_dict.get('step_type'),
+                    "step_text": candidate_dict.get('step_text'),
+                    "step_index": candidate_dict.get('step_index'),
+                    "scenario_id": candidate_dict.get('scenario_id'),
+                    "scenario_name": candidate_dict.get('scenario_name'),
+                    "scenario_full_text": candidate_dict.get('scenario_full_text'),
+                    "scenario_given_steps": candidate_dict.get('scenario_given_steps'),
+                    "scenario_when_steps": candidate_dict.get('scenario_when_steps'),
+                    "scenario_then_steps": candidate_dict.get('scenario_then_steps'),
+                    "reranker_score": float(reranker_score) if reranker_score is not None else None,
+                    "vector_similarity": float(candidate_vector_sim) if candidate_vector_sim is not None else None
+                })
+            
                 # Select top candidate
-                top_candidate = reranked[0]
-                top_reranker_score = top_candidate[1]
-                top_candidate_dict = top_candidate[0]
+            top_candidate = reranked[0]
+            top_reranker_score = top_candidate[1]
+            top_candidate_dict = top_candidate[0]
                 top_vector_sim = vector_similarity
             
             # Step 5: Select top candidate (for display/usage tracking)
@@ -272,10 +272,10 @@ class MatchingPipeline:
                 )
             else:
                 # When using reranker, use reranker score threshold
-                has_good_match = any(
+            has_good_match = any(
                     cand.get('reranker_score', -999) >= self.config.min_score_threshold
                     for cand in top_k_candidates
-                )
+            )
             
             if has_good_match:
                 final_action = "REUSED_TEMPLATE"

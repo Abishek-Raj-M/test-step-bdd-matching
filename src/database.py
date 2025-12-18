@@ -27,7 +27,6 @@ class TestStepChunk:
     action_verb: Optional[str]
     primary_object: Optional[str]
     placeholders: List[Dict[str, Any]]
-    embedding: np.ndarray
     cluster_id: Optional[int]
     chunk_index: int
     normalization_version: str
@@ -44,7 +43,6 @@ class FeatureStep:
     given_steps: Optional[str]
     when_steps: Optional[str]
     then_steps: Optional[str]
-    embedding: np.ndarray
     usage_count: int = 0
 
 
@@ -93,7 +91,7 @@ class Database:
     def _create_schema(self):
         """Create database schema."""
         with self.conn.cursor() as cur:
-            # Create teststep_chunks table
+            # Create teststep_chunks table (no embedding - not used for matching)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS {table_chunks} (
                     chunk_id SERIAL PRIMARY KEY,
@@ -103,21 +101,12 @@ class Database:
                     action_verb VARCHAR(100),
                     primary_object VARCHAR(255),
                     placeholders JSONB,
-                    embedding vector(%s),
                     cluster_id INTEGER,
                     chunk_index INTEGER,
                     normalization_version VARCHAR(10),
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 );
-            """.format(table_chunks=self.table_chunks), (self.config.embedding.dim,))
-            
-            # Create HNSW index for teststep_chunks
-            cur.execute("""
-                CREATE INDEX IF NOT EXISTS idx_{table_chunks}_embedding 
-                ON {table_chunks} 
-                USING hnsw (embedding vector_cosine_ops)
-                WITH (m = 16, ef_construction = 64);
             """.format(table_chunks=self.table_chunks))
             
             # Create indexes for joins
@@ -131,7 +120,7 @@ class Database:
                 ON {table_chunks}(parent_testcase_id);
             """.format(table_chunks=self.table_chunks))
             
-            # Create feature_steps table - stores actual BDD Steps (Given/When/Then)
+            # Create feature_steps table - stores actual BDD Steps (no embedding - not used for matching)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS {feature_steps} (
                     id SERIAL PRIMARY KEY,
@@ -142,13 +131,12 @@ class Database:
                     given_steps TEXT,
                     when_steps TEXT,
                     then_steps TEXT,
-                    embedding vector(%s),
                     doc_tsv TSVECTOR,
                     usage_count INTEGER DEFAULT 0,
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW()
                 );
-            """.format(feature_steps=self.table_feature_steps), (self.config.embedding.dim,))
+            """.format(feature_steps=self.table_feature_steps))
             
             # Add bdd_step_id column to teststep_chunks if not exists
             cur.execute(f"""
@@ -160,14 +148,6 @@ class Database:
                     END IF;
                 END $$;
             """)
-            
-            # Create HNSW index for feature_steps
-            cur.execute("""
-                CREATE INDEX IF NOT EXISTS idx_{feature_steps}_embedding 
-                ON {feature_steps} 
-                USING hnsw (embedding vector_cosine_ops)
-                WITH (m = 16, ef_construction = 64);
-            """.format(feature_steps=self.table_feature_steps))
             
             # Create GIN index for lexical search
             cur.execute("""
@@ -231,8 +211,8 @@ class Database:
             cur.execute("""
                 INSERT INTO {table_chunks} 
                 (parent_testcase_id, original_chunk, normalized_chunk, action_verb, 
-                 primary_object, placeholders, embedding, cluster_id, chunk_index, normalization_version)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 primary_object, placeholders, cluster_id, chunk_index, normalization_version)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING chunk_id;
             """.format(table_chunks=self.table_chunks), (
                 chunk.parent_testcase_id,
@@ -241,7 +221,6 @@ class Database:
                 chunk.action_verb,
                 chunk.primary_object,
                 json.dumps(chunk.placeholders),
-                chunk.embedding.tolist(),
                 chunk.cluster_id,
                 chunk.chunk_index,
                 chunk.normalization_version
@@ -258,7 +237,6 @@ class Database:
                 chunk.action_verb,
                 chunk.primary_object,
                 json.dumps(chunk.placeholders),
-                chunk.embedding.tolist(),
                 chunk.cluster_id,
                 chunk.chunk_index,
                 chunk.normalization_version
@@ -269,7 +247,7 @@ class Database:
                 """
                 INSERT INTO {table_chunks} 
                 (parent_testcase_id, original_chunk, normalized_chunk, action_verb, 
-                 primary_object, placeholders, embedding, cluster_id, chunk_index, normalization_version)
+                 primary_object, placeholders, cluster_id, chunk_index, normalization_version)
                 VALUES %s;
                 """.format(table_chunks=self.table_chunks),
                 data
@@ -290,8 +268,8 @@ class Database:
             cur.execute("""
                 INSERT INTO {feature_steps} 
                 (testcase_id, bdd_step, bdd_step_normalized, scenario_name, 
-                 given_steps, when_steps, then_steps, embedding, doc_tsv, usage_count)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, to_tsvector('english', %s), %s)
+                 given_steps, when_steps, then_steps, doc_tsv, usage_count)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, to_tsvector('english', %s), %s)
                 RETURNING id;
             """.format(feature_steps=self.table_feature_steps), (
                 feature_step.testcase_id,
@@ -301,7 +279,6 @@ class Database:
                 feature_step.given_steps,
                 feature_step.when_steps,
                 feature_step.then_steps,
-                feature_step.embedding.tolist(),
                 feature_step.bdd_step,
                 feature_step.usage_count
             ))
@@ -342,7 +319,7 @@ class Database:
         with self.conn.cursor() as cur:
             cur.execute("""
                 SELECT id, testcase_id, bdd_step, bdd_step_normalized, scenario_name,
-                       given_steps, when_steps, then_steps, embedding, usage_count
+                       given_steps, when_steps, then_steps, usage_count
                 FROM {feature_steps}
                 WHERE id = %s;
             """.format(feature_steps=self.table_feature_steps), (feature_step_id,))
@@ -360,8 +337,7 @@ class Database:
                 given_steps=row[5],
                 when_steps=row[6],
                 then_steps=row[7],
-                embedding=np.array(row[8]),
-                usage_count=row[9]
+                usage_count=row[8]
             )
     
     def vector_search(self, query_embedding: np.ndarray, limit: int, ef_search: int) -> List[Tuple[int, float, Dict[str, Any]]]:
